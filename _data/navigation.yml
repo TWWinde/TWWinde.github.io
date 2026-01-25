@@ -8,11 +8,14 @@
 #      Markdown formatted page while the second is generated using JSON.
 
 main:
+  - title: "News"
+    url: /#news
+
   - title: "Publications"
     url: /#publications
 
-  - title: "Blogs"
-    url: /#blogs
+  - title: "Blog"
+    url: /#blog
     
   - title: "CV"
     url: /#cv
