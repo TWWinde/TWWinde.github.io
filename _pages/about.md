@@ -15,8 +15,65 @@ I am a Ph.D. student at [TU Graz](https://www.tugraz.at/home), supervised by [Ol
 
 News
 ======
-*   **Jan 2026**: Updated website layout.
-*   **Present**: Ph.D. student at TU Graz.
+<style>
+.news-list {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.9em;
+  list-style-type: disc;
+  padding-left: 20px;
+  color: #333;
+}
+.dark-theme .news-list {
+  color: #ccc;
+}
+.news-list li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.news-date {
+  font-weight: bold;
+  color: #000;
+}
+.dark-theme .news-date {
+  color: #fff;
+}
+.news-highlight {
+  color: #2ea44f; /* Green color similar to GitHub/Screenshot */
+  font-weight: normal;
+}
+.news-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #24292e;
+    color: #ffffff !important;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    margin-left: 6px;
+    text-decoration: none !important;
+    line-height: 1.2;
+    vertical-align: middle;
+}
+.news-badge i {
+  margin-right: 4px;
+}
+.news-badge:hover {
+    background-color: #444;
+    text-decoration: none;
+}
+</style>
+
+<ul class="news-list">
+  <li><span class="news-date">[Jan. 2026]</span> Updated website layout.</li>
+  <li><span class="news-date">[Present]</span> Ph.D. student at <span class="news-highlight">TU Graz</span> researching Efficient ML.</li>
+  <!-- Example of how to add a paper with links (uncomment to use)
+  <li><span class="news-date">[Dec. 2025]</span> Our paper on <span class="news-highlight">Efficient ML</span> was accepted at <span class="news-highlight">ICLR'26</span>. 
+      <a href="#" class="news-badge"><i class="fas fa-file-pdf"></i> PDF</a>
+      <a href="#" class="news-badge"><i class="fab fa-github"></i> Code</a>
+  </li>
+  -->
+</ul>
 
 
 <div id="publications" style="margin-top: 60px;"></div>
