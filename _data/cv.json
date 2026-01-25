@@ -1,14 +1,14 @@
 {
   "basics": {
-    "name": "Your Sidebar Name",
+    "name": "Wenwu Tang\uff08\u5510\u6587\u6b66\uff09",
     "email": "none@example.org",
     "phone": "",
     "website": "https://academicpages.github.io",
-    "summary": "Currently employed at Red Brick University. Short biography for the left-hand sidebar",
+    "summary": "Currently employed at TU Graz. Ph.D. student in Efficient ML.",
     "location": {
       "address": "",
       "postalCode": "",
-      "city": "Earth",
+      "city": "Graz, Austria",
       "countryCode": "US",
       "region": ""
     },
@@ -32,15 +32,6 @@
   },
   "work": [],
   "education": [
-    {
-      "institution": "GitHub University",
-      "area": "Ph.D in Version Control Theory",
-      "studyType": "",
-      "startDate": "",
-      "endDate": "2018",
-      "gpa": null,
-      "courses": []
-    },
     {
       "institution": "GitHub University",
       "area": "M.S. in Jekyll",
@@ -92,6 +83,13 @@
       "releaseDate": "2024-02-17",
       "website": "https://academicpages.github.io/files/paper3.pdf",
       "summary": "This paper is about fixing template issue #693."
+    },
+    {
+      "name": "Paper Title Number 5, with math $$E=mc^2$$",
+      "publisher": "GitHub Journal of Bugs",
+      "releaseDate": "2024-02-17",
+      "website": "https://academicpages.github.io/files/paper3.pdf",
+      "summary": "This paper is about a famous math equation, $$E=mc^2$$"
     }
   ],
   "presentations": [
