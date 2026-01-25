@@ -1,7 +1,7 @@
 {
   "basics": {
     "name": "Wenwu Tang\uff08\u5510\u6587\u6b66\uff09",
-    "email": "none@example.org",
+    "email": "wenwu.tang.at@gmail.com",
     "phone": "",
     "website": "https://TWWinde.github.io",
     "summary": "Currently employed at Technische Universit\u00e4t Graz. Ph.D. student in Efficient ML.",
@@ -31,26 +31,7 @@
     ]
   },
   "work": [],
-  "education": [
-    {
-      "institution": "GitHub University",
-      "area": "M.S. in Jekyll",
-      "studyType": "",
-      "startDate": "",
-      "endDate": "2014",
-      "gpa": null,
-      "courses": []
-    },
-    {
-      "institution": "GitHub University",
-      "area": "B.S. in GitHub",
-      "studyType": "",
-      "startDate": "",
-      "endDate": "2012",
-      "gpa": null,
-      "courses": []
-    }
-  ],
+  "education": [],
   "skills": [],
   "languages": [],
   "interests": [],
