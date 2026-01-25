@@ -15,7 +15,7 @@ News
 ======
 {% include base_path %}
 {% for post in site.posts limit:5 %}
-  {% include archive-single.html type="grid" %}
+  {% include archive-single.html %}
 {% endfor %}
 
 
