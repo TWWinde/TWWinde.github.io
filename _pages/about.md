@@ -1,7 +1,11 @@
 ---
 permalink: /
-title: "About Me"
+title: "Wenwu Tang"
+excerpt: "Welcome to my homepage! 👋"
 author_profile: true
+header:
+  overlay_image: hero-bg.png
+  overlay_filter: 0.2
 redirect_from: 
   - /about/
   - /about.html
