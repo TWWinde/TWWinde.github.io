@@ -38,7 +38,7 @@
   margin-top: 0;
   line-height: 1;
 
-  & + .page__meta {
+  &+.page__meta {
     margin-top: -0.5em;
   }
 }
@@ -55,7 +55,9 @@
     border-bottom: 1px solid var(--global-border-color);
   }
 
-  p, li, dl {
+  p,
+  li,
+  dl {
     font-size: 1em;
   }
 
@@ -64,8 +66,8 @@
     margin: 0 0 $indent-var;
 
     /* sibling indentation*/
-    @if $paragraph-indent == true {
-      & + p {
+    @if $paragraph-indent ==true {
+      &+p {
         text-indent: $indent-var;
         margin-top: -($indent-var);
       }
@@ -101,7 +103,7 @@
   }
 
   /* blockquote citations */
-  blockquote + .small {
+  blockquote+.small {
     margin-top: -1.5em;
     padding-left: 1.25rem;
   }
@@ -117,7 +119,7 @@
   &--overlay {
     position: relative;
     margin-bottom: 2em;
-    padding: 3em 0;
+    padding: 8em 0;
     @include clearfix;
     background-size: cover;
     background-repeat: no-repeat;
@@ -133,8 +135,12 @@
       padding-left: 1em;
       padding-right: 1em;
 
-      @include breakpoint($x-large) {
+      @include breakpoint($large) {
         max-width: $x-large;
+        padding-left: 25%;
+        /* Move text to the right to avoid sidebar */
+        text-align: center;
+        /* Center the text */
       }
     }
 
@@ -148,6 +154,9 @@
 
     .page__lead {
       max-width: $medium;
+      margin-left: auto;
+      /* Center align within the new text area */
+      margin-right: auto;
     }
 
     .page__title {
@@ -300,6 +309,7 @@
   transition: $global-transition;
 
   &.disabled {
+
     input,
     button,
     textarea,
