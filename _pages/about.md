@@ -7,7 +7,7 @@ redirect_from:
   - /about.html
 ---
 
-I am a Ph.D. student at TU Graz researching Efficient ML. My research focuses on... (Add more details about yourself here).
+I am a Ph.D. student at [**TU Graz**](https://www.tugraz.at/home) researching **Efficient ML**, supervised by [**Olga Saukh**](https://sites.google.com/view/olgasaukh/home) at the [**Embedded Learning and Sensing Systems (ELSS) Group**](https://www.tugraz.at/en/arbeitsgruppen/iti-teams/elss/team-contact), Institute for Technical Informatics, TU Graz, Austria.
 
 
 <div id="blogs"></div>
