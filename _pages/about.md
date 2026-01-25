@@ -10,7 +10,9 @@ redirect_from:
 I am a Ph.D. student at [TU Graz](https://www.tugraz.at/home), supervised by [Olga Saukh](https://sites.google.com/view/olgasaukh/home) at the [Embedded Learning and Sensing Systems (ELSS) Group](https://www.tugraz.at/en/arbeitsgruppen/iti-teams/elss/team-contact), Institute for Technical Informatics, TU Graz, Austria.
 
 
-<div id="blogs"></div>
+<div id="blogs" style="margin-top: 60px;"></div>
+<hr style="border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)); margin: 20px 0;">
+
 News
 ======
 {% include base_path %}
@@ -19,7 +21,9 @@ News
 {% endfor %}
 
 
-<div id="publications"></div>
+<div id="publications" style="margin-top: 60px;"></div>
+<hr style="border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)); margin: 20px 0;">
+
 Publications
 ======
 {% for post in site.publications reversed %}
@@ -27,7 +31,9 @@ Publications
 {% endfor %}
 
 
-<div id="cv"></div>
+<div id="cv" style="margin-top: 60px;"></div>
+<hr style="border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)); margin: 20px 0;">
+
 CV
 ======
 
