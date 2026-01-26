@@ -1,0 +1,120 @@
+/* Publication Card Styles */
+.publication-card {
+    display: flex !important;
+    flex-direction: row;
+    background: #24292e;
+    /* Dark background like snippet */
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    align-items: center;
+    /* Center vertically if needed */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Mobile responsive: stack vertically */
+@media (max-width: 768px) {
+    .publication-card {
+        flex-direction: column-reverse;
+    }
+
+    .publication-content {
+        padding-right: 0 !important;
+    }
+
+    .publication-thumbnail {
+        width: 100% !important;
+        margin-bottom: 15px;
+    }
+}
+
+.publication-content {
+    flex: 1;
+    padding-right: 20px;
+}
+
+.publication-thumbnail {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.publication-thumbnail img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    object-fit: cover;
+}
+
+.publication-card .archive__item-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+    line-height: 1.2;
+}
+
+.publication-card .archive__item-title a {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+.publication-card .archive__item-title a:hover {
+    text-decoration: underline;
+    color: #58a6ff !important;
+}
+
+.publication-meta {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #e1e4e8;
+    margin-bottom: 0.5rem;
+}
+
+.publication-authors {
+    font-size: 0.95rem;
+    color: #8b949e;
+    margin-bottom: 1.5rem;
+}
+
+.publication-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.publication-buttons .btn {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #58a6ff;
+    background-color: #0d1117;
+    /* Very dark/black button bg */
+    text-decoration: none;
+    transition: .2s cubic-bezier(0.3, 0, 0.5, 1);
+    transition-property: color, background-color, border-color;
+    box-shadow: 0 1px 0 rgba(27, 31, 35, 0.04);
+    margin-right: 0 !important;
+    /* override default btn margins if any */
+}
+
+.publication-buttons .btn:hover {
+    background-color: #30363d;
+    text-decoration: none;
+    border-color: #8b949e;
+    color: #ffffff;
+}
