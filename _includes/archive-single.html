@@ -39,7 +39,6 @@
         <a href="{{ post.paperurl }}" class="btn btn--outline-primary btn--small">PDF</a>
         {% endif %}
 
-        <!-- Add a Cite button if bibtex is present - normally opens a modal or similar, but simplified here -->
         {% if post.bibtexurl %}
         <a href="{{ post.bibtexurl }}" class="btn btn--outline-primary btn--small">Cite</a>
         {% endif %}
@@ -56,8 +55,9 @@
 
     {% if teaser %}
     <div class="publication-thumbnail">
-      <img src="{% if teaser contains " ://" %}{{ teaser }}{% else %}{{ teaser | prepend: "/images/" | prepend:
-        base_path }}{% endif %}" alt="">
+      <img
+        src="{% if teaser contains '://' %}{{ teaser }}{% else %}{{ teaser | prepend: '/images/' | prepend: base_path }}{% endif %}"
+        alt="">
     </div>
     {% endif %}
   </article>
@@ -65,8 +65,9 @@
   <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
     {% if include.type == "grid" and teaser %}
     <div class="archive__item-teaser">
-      <img src={% if teaser contains "://" %} "{{ teaser }}" {% else %} "{{ teaser | prepend: " /images/" | prepend:
-        base_path }}" {% endif %} alt="">
+      <img
+        src="{% if teaser contains '://' %}{{ teaser }}{% else %}{{ teaser | prepend: '/images/' | prepend: base_path }}{% endif %}"
+        alt="">
     </div>
     {% endif %}
 
@@ -101,7 +102,6 @@
     </p>
     {% endif %}
 
-    <!-- Old simplified links for non-pub items -->
     {% if post.citation and post.paperurl %}
     <p>Recommended citation: {{ post.citation }} <a href="{{ post.paperurl }}">Download Paper</a></p>
     {% elsif post.citation %}
