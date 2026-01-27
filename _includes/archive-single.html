@@ -15,44 +15,6 @@
 <div class="{{ include.type | default: " list" }}__item">
   {% if post.collection == 'publications' %}
   <article class="archive__item publication-card" itemscope itemtype="http://schema.org/CreativeWork">
-    <div class="publication-content">
-      <h2 class="archive__item-title" itemprop="headline">
-        {% if post.link %}
-        <a href="{{ post.link }}">{{ title }}</a> <a href="{{ base_path }}{{ post.url }}" rel="permalink"><i
-            class="fa fa-link" aria-hidden="true" title="permalink"></i><span class="sr-only">Permalink</span></a>
-        {% else %}
-        <a href="{{ base_path }}{{ post.url }}" rel="permalink">{{ title }}</a>
-        {% endif %}
-      </h2>
-
-      <div class="publication-meta">
-        {% if post.venue %}{{ post.venue }}{% endif %}{% if post.venue and post.date %}, {% endif %}{% if post.date %}{{
-        post.date | date: "%Y" }}{% endif %}
-      </div>
-
-      <div class="publication-authors">
-        {{ post.authors | default: post.citation | markdownify | remove: "<p>" | remove: "</p>" }}
-      </div>
-
-      <div class="publication-buttons">
-        {% if post.paperurl %}
-        <a href="{{ post.paperurl }}" class="btn btn--outline-primary btn--small">PDF</a>
-        {% endif %}
-
-        {% if post.bibtexurl %}
-        <a href="{{ post.bibtexurl }}" class="btn btn--outline-primary btn--small">Cite</a>
-        {% endif %}
-
-        {% if post.codeurl %}
-        <a href="{{ post.codeurl }}" class="btn btn--outline-primary btn--small">Code</a>
-        {% endif %}
-
-        {% if post.slidesurl %}
-        <a href="{{ post.slidesurl }}" class="btn btn--outline-primary btn--small">Slides</a>
-        {% endif %}
-      </div>
-    </div>
-
     {% if teaser %}
     <div class="publication-thumbnail">
       <img
@@ -60,6 +22,35 @@
         alt="">
     </div>
     {% endif %}
+
+    <div class="publication-content">
+      <h2 class="archive__item-title" itemprop="headline">
+        {% if post.venue %}<span class="pub-venue-tag">[{{ post.venue_short | default: post.venue }}]</span> {% endif
+        %}{{ title }}
+      </h2>
+
+      <div class="publication-authors">
+        {{ post.authors | default: post.citation | markdownify | remove: "<p>" | remove: "</p>" }}
+      </div>
+
+      <div class="publication-buttons">
+        {% if post.paperurl %}
+        <a href="{{ post.paperurl }}" class="pub-link">Paper</a>
+        {% endif %}
+        {% if post.codeurl %}
+        {% if post.paperurl %}<span class="pub-divider">|</span>{% endif %}
+        <a href="{{ post.codeurl }}" class="pub-link">Code</a>
+        {% endif %}
+        {% if post.projecturl %}
+        {% if post.paperurl or post.codeurl %}<span class="pub-divider">|</span>{% endif %}
+        <a href="{{ post.projecturl }}" class="pub-link">Project</a>
+        {% endif %}
+        {% if post.slidesurl %}
+        {% if post.paperurl or post.codeurl or post.projecturl %}<span class="pub-divider">|</span>{% endif %}
+        <a href="{{ post.slidesurl }}" class="pub-link">Slides</a>
+        {% endif %}
+      </div>
+    </div>
   </article>
   {% else %}
   <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">

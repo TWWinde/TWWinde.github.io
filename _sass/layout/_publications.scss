@@ -1,124 +1,149 @@
-/* Publication Card Styles */
+/* Publication Card Styles - New Format */
 .publication-card {
     display: flex !important;
     flex-direction: row;
     background: #ffffff;
-    /* White background */
     color: #24292e;
-    /* Dark text */
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e1e4e8;
-    /* Light border */
-    align-items: center;
+    padding: 24px;
+    border-radius: 0;
+    margin-bottom: 30px;
+    box-shadow: none;
+    border: none;
+    border-bottom: 1px solid #eee;
+    align-items: flex-start;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* Mobile responsive: stack vertically */
 @media (max-width: 768px) {
     .publication-card {
-        flex-direction: column-reverse;
+        flex-direction: column;
     }
 
     .publication-content {
-        padding-right: 0 !important;
+        padding-left: 0 !important;
     }
 
     .publication-thumbnail {
         width: 100% !important;
+        max-width: 300px;
         margin-bottom: 15px;
     }
 }
 
-.publication-content {
-    flex: 1;
-    padding-right: 20px;
-}
-
 .publication-thumbnail {
-    width: 220px;
+    width: 280px;
+    min-width: 280px;
     flex-shrink: 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    margin-right: 24px;
 }
 
 .publication-thumbnail img {
     width: 100%;
     height: auto;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    object-fit: cover;
+    border-radius: 0;
+    box-shadow: none;
+    object-fit: contain;
+}
+
+.publication-content {
+    flex: 1;
+    padding-left: 0;
 }
 
 .publication-card .archive__item-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
     margin-top: 0;
-    line-height: 1.2;
+    line-height: 1.35;
+    color: #222;
 }
 
 .publication-card .archive__item-title a {
-    color: #24292e !important;
-    /* Dark text */
+    color: #222 !important;
     text-decoration: none;
 }
 
 .publication-card .archive__item-title a:hover {
     text-decoration: underline;
-    color: #0366d6 !important;
-    /* GitHub blue */
 }
 
-.publication-meta {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #586069;
-    /* Gray text */
-    margin-bottom: 0.5rem;
+/* Venue tag like [3DV'25] */
+.pub-venue-tag {
+    color: #24292e;
+    font-weight: 700;
 }
 
 .publication-authors {
-    font-size: 0.95rem;
-    color: #24292e;
-    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    font-style: italic;
+    color: #333;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
 }
 
+/* Author links - highlighted names */
+.publication-authors a {
+    color: #0891b2;
+    /* Cyan color like the example */
+    text-decoration: none;
+}
+
+.publication-authors a:hover {
+    text-decoration: underline;
+}
+
+/* Paper | Code links */
 .publication-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    align-items: center;
+    gap: 0;
+    margin-top: 4px;
 }
 
-.publication-buttons .btn {
-    display: inline-block;
-    padding: 4px 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    line-height: 20px;
-    white-space: nowrap;
-    vertical-align: middle;
-    cursor: pointer;
-    user-select: none;
-    border: 1px solid #d1d5da;
-    border-radius: 6px;
-    color: #24292e;
-    background-color: #f6f8fa;
-    /* Light gray button bg */
-    text-decoration: none;
-    transition: .2s cubic-bezier(0.3, 0, 0.5, 1);
-    transition-property: color, background-color, border-color;
-    box-shadow: 0 1px 0 rgba(27, 31, 35, 0.04);
-    margin-right: 0 !important;
+.pub-link {
+    color: #0891b2;
+    text-decoration: underline;
+    font-size: 1rem;
+    font-weight: 400;
 }
 
-.publication-buttons .btn:hover {
-    background-color: #f3f4f6;
-    text-decoration: none;
-    border-color: #24292e;
-    color: #24292e;
+.pub-link:hover {
+    color: #0e7490;
+}
+
+.pub-divider {
+    color: #666;
+    margin: 0 8px;
+    font-size: 1rem;
+}
+
+/* Dark mode support */
+html[data-theme="dark"] .publication-card {
+    background: transparent;
+    border-bottom-color: #444;
+}
+
+html[data-theme="dark"] .publication-card .archive__item-title,
+html[data-theme="dark"] .publication-card .archive__item-title a,
+html[data-theme="dark"] .pub-venue-tag {
+    color: #fff !important;
+}
+
+html[data-theme="dark"] .publication-authors {
+    color: #ccc;
+}
+
+html[data-theme="dark"] .pub-link {
+    color: #22d3ee;
+}
+
+html[data-theme="dark"] .pub-divider {
+    color: #888;
 }
