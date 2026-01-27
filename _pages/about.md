@@ -25,10 +25,7 @@ News
   font-size: 0.9em;
   list-style-type: disc;
   padding-left: 20px;
-  color: #333;
-}
-.dark-theme .news-list {
-  color: #ccc;
+  color: var(--global-text-color);
 }
 .news-list li {
   margin-bottom: 8px;
@@ -36,10 +33,7 @@ News
 }
 .news-date {
   font-weight: bold;
-  color: #000;
-}
-.dark-theme .news-date {
-  color: #fff;
+  color: var(--global-text-color);
 }
 .news-highlight {
   color: #2ea44f; /* Green color similar to GitHub/Screenshot */
