@@ -95,9 +95,9 @@ Publications
 
 Blog
 ======
-*   [Blog Post number 4](http://github.com/academicpages/academicpages.github.io/tree/master/_posts/2015-08-14-blog-post-4.md)
-*   [Blog Post number 3](http://github.com/academicpages/academicpages.github.io/tree/master/_posts/2014-08-14-blog-post-3.md)
-*   [Blog Post number 2](http://github.com/academicpages/academicpages.github.io/tree/master/_posts/2013-08-14-blog-post-2.md)
-*   [Blog Post number 1](http://github.com/academicpages/academicpages.github.io/tree/master/_posts/2012-08-14-blog-post-1.md)
+*   [Blog Post number 4](/posts/2015/08/blog-post-4/)
+*   [Blog Post number 3](/posts/2014/08/blog-post-3/)
+*   [Blog Post number 2](/posts/2013/08/blog-post-2/)
+*   [Blog Post number 1](/posts/2012/08/blog-post-1/)
 
 
