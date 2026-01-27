@@ -2,15 +2,17 @@
 .publication-card {
     display: flex !important;
     flex-direction: row;
-    background: #24292e;
-    /* Dark background like snippet */
-    color: #ffffff;
+    background: #ffffff;
+    /* White background */
+    color: #24292e;
+    /* Dark text */
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e4e8;
+    /* Light border */
     align-items: center;
-    /* Center vertically if needed */
     position: relative;
     overflow: hidden;
 }
@@ -48,7 +50,7 @@
     width: 100%;
     height: auto;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     object-fit: cover;
 }
 
@@ -61,25 +63,28 @@
 }
 
 .publication-card .archive__item-title a {
-    color: #ffffff !important;
+    color: #24292e !important;
+    /* Dark text */
     text-decoration: none;
 }
 
 .publication-card .archive__item-title a:hover {
     text-decoration: underline;
-    color: #58a6ff !important;
+    color: #0366d6 !important;
+    /* GitHub blue */
 }
 
 .publication-meta {
     font-size: 1rem;
     font-weight: 500;
-    color: #e1e4e8;
+    color: #586069;
+    /* Gray text */
     margin-bottom: 0.5rem;
 }
 
 .publication-authors {
     font-size: 0.95rem;
-    color: #8b949e;
+    color: #24292e;
     margin-bottom: 1.5rem;
 }
 
@@ -99,22 +104,21 @@
     vertical-align: middle;
     cursor: pointer;
     user-select: none;
-    border: 1px solid #30363d;
+    border: 1px solid #d1d5da;
     border-radius: 6px;
-    color: #58a6ff;
-    background-color: #0d1117;
-    /* Very dark/black button bg */
+    color: #24292e;
+    background-color: #f6f8fa;
+    /* Light gray button bg */
     text-decoration: none;
     transition: .2s cubic-bezier(0.3, 0, 0.5, 1);
     transition-property: color, background-color, border-color;
     box-shadow: 0 1px 0 rgba(27, 31, 35, 0.04);
     margin-right: 0 !important;
-    /* override default btn margins if any */
 }
 
 .publication-buttons .btn:hover {
-    background-color: #30363d;
+    background-color: #f3f4f6;
     text-decoration: none;
-    border-color: #8b949e;
-    color: #ffffff;
+    border-color: #24292e;
+    color: #24292e;
 }
