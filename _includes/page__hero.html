@@ -39,7 +39,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 0;
+      z-index: 1;
       overflow: hidden;
     }
 
@@ -61,7 +61,12 @@
 
     .page__hero--overlay .wrapper {
       position: relative;
-      z-index: 2;
+      z-index: 5;
+    }
+
+    .page__hero-caption {
+      z-index: 5;
+      position: relative;
     }
   </style>
   <div class="hero-slider" id="heroSlider">
@@ -69,7 +74,7 @@
     {% if img contains "://" %}
     {% assign slide_img_path = img %}
     {% else %}
-    {% assign slide_img_path = img | prepend: "/images/" | prepend: base_path %}
+    {% assign slide_img_path = site.url | append: site.baseurl | append: "/images/" | append: img %}
     {% endif %}
     <div class="hero-slide {% if forloop.first %}active{% endif %}"
       style="background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ slide_img_path }}');">
@@ -79,13 +84,13 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var slides = document.querySelectorAll('.hero-slide');
-      var currentSlide = 0;
-      var slideInterval = setInterval(nextSlide, 5000); // Change every 5 seconds
-
-      function nextSlide() {
-        slides[currentSlide].className = 'hero-slide';
-        currentSlide = (currentSlide + 1) % slides.length;
-        slides[currentSlide].className = 'hero-slide active';
+      if (slides.length > 1) {
+        var currentSlide = 0;
+        setInterval(function () {
+          slides[currentSlide].classList.remove('active');
+          currentSlide = (currentSlide + 1) % slides.length;
+          slides[currentSlide].classList.add('active');
+        }, 5000);
       }
     });
   </script>
