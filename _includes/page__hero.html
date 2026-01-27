@@ -67,9 +67,9 @@
   <div class="hero-slider" id="heroSlider">
     {% for img in page.header.overlay_images %}
     {% if img contains "://" %}
-    {% capture slide_img_path %}{{ img }}{% endcapture %}
+    {% assign slide_img_path = img %}
     {% else %}
-    {% capture slide_img_path %}{{ img | prepend: "/images/" | prepend: base_path }}{% endcapture %}
+    {% assign slide_img_path = img | prepend: "/images/" | prepend: base_path %}
     {% endif %}
     <div class="hero-slide {% if forloop.first %}active{% endif %}"
       style="background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ slide_img_path }}');">
