@@ -56,8 +56,8 @@
 
     {% if teaser %}
     <div class="publication-thumbnail">
-      <img src={% if teaser contains "://" %} "{{ teaser }}" {% else %} "{{ teaser | prepend: " /images/" | prepend:
-        base_path }}" {% endif %} alt="">
+      <img src="{% if teaser contains " ://" %}{{ teaser }}{% else %}{{ teaser | prepend: "/images/" | prepend:
+        base_path }}{% endif %}" alt="">
     </div>
     {% endif %}
   </article>
