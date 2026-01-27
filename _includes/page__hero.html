@@ -1,55 +1,122 @@
 {% include base_path %}
 
 {% if page.header.image contains "://" %}
-  {% capture img_path %}{{ page.header.image }}{% endcapture %}
+{% capture img_path %}{{ page.header.image }}{% endcapture %}
 {% else %}
-  {% capture img_path %}{{ page.header.image | prepend: "/images/" | prepend: base_path }}{% endcapture %}
+{% capture img_path %}{{ page.header.image | prepend: "/images/" | prepend: base_path }}{% endcapture %}
 {% endif %}
 
 {% if page.header.cta_url contains "://" %}
-  {% capture cta_path %}{{ page.header.cta_url }}{% endcapture %}
+{% capture cta_path %}{{ page.header.cta_url }}{% endcapture %}
 {% else %}
-  {% capture cta_path %}{{ page.header.cta_url | prepend: base_path }}{% endcapture %}
+{% capture cta_path %}{{ page.header.cta_url | prepend: base_path }}{% endcapture %}
 {% endif %}
 
 {% if page.header.overlay_image contains "://" %}
-  {% capture overlay_img_path %}{{ page.header.overlay_image }}{% endcapture %}
+{% capture overlay_img_path %}{{ page.header.overlay_image }}{% endcapture %}
 {% elsif page.header.overlay_image %}
-  {% capture overlay_img_path %}{{ page.header.overlay_image | prepend: "/images/" | prepend: base_path }}{% endcapture %}
+{% capture overlay_img_path %}{{ page.header.overlay_image | prepend: "/images/" | prepend: base_path }}{% endcapture %}
 {% endif %}
 
 {% if page.header.overlay_filter contains "rgba" %}
-  {% capture overlay_filter %}{{ page.header.overlay_filter }}{% endcapture %}
+{% capture overlay_filter %}{{ page.header.overlay_filter }}{% endcapture %}
 {% elsif page.header.overlay_filter %}
-  {% capture overlay_filter %}rgba(0, 0, 0, {{ page.header.overlay_filter }}){% endcapture %}
+{% capture overlay_filter %}rgba(0, 0, 0, {{ page.header.overlay_filter }}){% endcapture %}
 {% endif %}
 
-<div class="page__hero{% if page.header.overlay_color or page.header.overlay_image %}--overlay{% endif %}"
-  style="{% if page.header.overlay_color %}background-color: {{ page.header.overlay_color | default: 'transparent' }};{% endif %} {% if overlay_img_path %}background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ overlay_img_path }}');{% endif %}"
->
-  {% if page.header.overlay_color or page.header.overlay_image %}
-    <div class="wrapper">
-      <h1 class="page__title" itemprop="headline">
-        {% if paginator %}
-          {{ site.title }}{% unless paginator.page == 1 %} {{ site.data.ui-text[site.locale].page | default: "Page" }} {{ paginator.page }}{% endunless %}
-        {% else %}
-          {{ page.title | default: site.title | markdownify | remove: "<p>" | remove: "</p>" }}
-        {% endif %}
-      </h1>
-      {% if page.excerpt %}
-        <p class="page__lead">{{ page.excerpt | markdownify | remove: "<p>" | remove: "</p>" }}</p>
-      {% endif %}
-      {% if site.read_time and page.read_time %}
-        <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
-      {% endif %}
-      {% if page.header.cta_url %}
-        <p><a href="{{ cta_path }}" class="btn btn--light-outline btn--large">{{ page.header.cta_label | default: site.data.ui-text[site.locale].more_label | default: "Learn More" }}</a></p>
-      {% endif %}
+{% assign has_slider = false %}
+{% if page.header.overlay_images %}
+{% assign has_slider = true %}
+{% endif %}
+
+<div class="page__hero{% if page.header.overlay_color or page.header.overlay_image or has_slider %}--overlay{% endif %}"
+  style="{% if page.header.overlay_color %}background-color: {{ page.header.overlay_color | default: 'transparent' }};{% endif %} {% unless has_slider %}{% if overlay_img_path %}background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ overlay_img_path }}');{% endif %}{% endunless %}">
+  {% if has_slider %}
+  <style>
+    .hero-slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .hero-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .hero-slide.active {
+      opacity: 1;
+    }
+
+    .page__hero--overlay .wrapper {
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+  <div class="hero-slider" id="heroSlider">
+    {% for img in page.header.overlay_images %}
+    {% if img contains "://" %}
+    {% capture slide_img_path %}{{ img }}{% endcapture %}
+    {% else %}
+    {% capture slide_img_path %}{{ img | prepend: "/images/" | prepend: base_path }}{% endcapture %}
+    {% endif %}
+    <div class="hero-slide {% if forloop.first %}active{% endif %}"
+      style="background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ slide_img_path }}');">
     </div>
+    {% endfor %}
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var slides = document.querySelectorAll('.hero-slide');
+      var currentSlide = 0;
+      var slideInterval = setInterval(nextSlide, 5000); // Change every 5 seconds
+
+      function nextSlide() {
+        slides[currentSlide].className = 'hero-slide';
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].className = 'hero-slide active';
+      }
+    });
+  </script>
+  {% endif %}
+
+  {% if page.header.overlay_color or page.header.overlay_image or has_slider %}
+  <div class="wrapper">
+    <h1 class="page__title" itemprop="headline">
+      {% if paginator %}
+      {{ site.title }}{% unless paginator.page == 1 %} {{ site.data.ui-text[site.locale].page | default: "Page" }} {{
+      paginator.page }}{% endunless %}
+      {% else %}
+      {{ page.title | default: site.title | markdownify | remove: "<p>" | remove: "</p>" }}
+      {% endif %}
+    </h1>
+    {% if page.excerpt %}
+    <p class="page__lead">{{ page.excerpt | markdownify | remove: "
+    <p>" | remove: "</p>" }}</p>
+    {% endif %}
+    {% if site.read_time and page.read_time %}
+    <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
+    {% endif %}
+    {% if page.header.cta_url %}
+    <p><a href="{{ cta_path }}" class="btn btn--light-outline btn--large">{{ page.header.cta_label | default:
+        site.data.ui-text[site.locale].more_label | default: "Learn More" }}</a></p>
+    {% endif %}
+  </div>
   {% else %}
-    <img src="{{ img_path }}" alt="{{ page.title }}" class="page__hero-image">
+  <img src="{{ img_path }}" alt="{{ page.title }}" class="page__hero-image">
   {% endif %}
   {% if page.header.caption %}
-    <span class="page__hero-caption">{{ page.header.caption | markdownify | remove: "<p>" | remove: "</p>" }}</span>
+  <span class="page__hero-caption">{{ page.header.caption | markdownify | remove: "<p>" | remove: "</p>" }}</span>
   {% endif %}
 </div>
