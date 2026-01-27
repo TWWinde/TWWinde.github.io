@@ -23,7 +23,7 @@ repository               : "TWWinde/TWWinde.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "profile.png"
+  avatar           : "profile-blurred.png"
   name             : "Wenwu Tang（唐文武）"
   pronouns         : # example: "she/her"  
   bio              : "Ph.D. student in Efficient ML."
