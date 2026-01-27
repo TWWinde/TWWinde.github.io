@@ -25,78 +25,71 @@
 {% endif %}
 
 {% assign has_slider = false %}
-{% if page.header.overlay_images %}
+{% if page.header.overlay_images and page.header.overlay_images.size > 0 %}
 {% assign has_slider = true %}
 {% endif %}
 
-<div class="page__hero{% if page.header.overlay_color or page.header.overlay_image or has_slider %}--overlay{% endif %}"
-  style="{% if page.header.overlay_color %}background-color: {{ page.header.overlay_color | default: 'transparent' }};{% endif %} {% unless has_slider %}{% if overlay_img_path %}background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ overlay_img_path }}');{% endif %}{% endunless %}">
-  {% if has_slider %}
-  <style>
-    .hero-slider {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      overflow: hidden;
-    }
-
-    .hero-slide {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      opacity: 0;
-      transition: opacity 1.5s ease-in-out;
-    }
-
-    .hero-slide.active {
-      opacity: 1;
-    }
-
-    .page__hero--overlay .wrapper {
-      position: relative;
-      z-index: 5;
-    }
-
-    .page__hero-caption {
-      z-index: 5;
-      position: relative;
-    }
-  </style>
-  <div class="hero-slider" id="heroSlider">
+{% if has_slider %}
+<div class="page__hero--overlay" style="position: relative; overflow: hidden;">
+  <div class="hero-slider" id="heroSlider"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
     {% for img in page.header.overlay_images %}
     {% if img contains "://" %}
-    {% assign slide_img_path = img %}
+    {% assign slide_url = img %}
     {% else %}
-    {% assign slide_img_path = img | prepend: "/images/" | prepend: base_path %}
+    {% assign slide_url = base_path | append: "/images/" | append: img %}
     {% endif %}
-    <div class="hero-slide {% if forloop.first %}active{% endif %}"
-      style="background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ slide_img_path }}');">
+    <div class="hero-slide{% if forloop.first %} active{% endif %}"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: {% if forloop.first %}1{% else %}0{% endif %}; transition: opacity 1.5s ease-in-out; background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ slide_url }}');">
     </div>
     {% endfor %}
   </div>
+  <div class="wrapper" style="position: relative; z-index: 2;">
+    <h1 class="page__title" itemprop="headline">
+      {% if paginator %}
+      {{ site.title }}{% unless paginator.page == 1 %} {{ site.data.ui-text[site.locale].page | default: "Page" }} {{
+      paginator.page }}{% endunless %}
+      {% else %}
+      {{ page.title | default: site.title | markdownify | remove: "<p>" | remove: "</p>" }}
+      {% endif %}
+    </h1>
+    {% if page.excerpt %}
+    <p class="page__lead">{{ page.excerpt | markdownify | remove: "
+    <p>" | remove: "</p>" }}</p>
+    {% endif %}
+    {% if site.read_time and page.read_time %}
+    <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
+    {% endif %}
+    {% if page.header.cta_url %}
+    <p><a href="{{ cta_path }}" class="btn btn--light-outline btn--large">{{ page.header.cta_label | default:
+        site.data.ui-text[site.locale].more_label | default: "Learn More" }}</a></p>
+    {% endif %}
+  </div>
+  {% if page.header.caption %}
+  <span class="page__hero-caption" style="position: relative; z-index: 2;">{{ page.header.caption | markdownify |
+    remove: "<p>" | remove: "</p>" }}</span>
+  {% endif %}
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    (function () {
       var slides = document.querySelectorAll('.hero-slide');
       if (slides.length > 1) {
-        var currentSlide = 0;
+        var current = 0;
         setInterval(function () {
-          slides[currentSlide].classList.remove('active');
-          currentSlide = (currentSlide + 1) % slides.length;
-          slides[currentSlide].classList.add('active');
+          slides[current].style.opacity = '0';
+          slides[current].classList.remove('active');
+          current = (current + 1) % slides.length;
+          slides[current].style.opacity = '1';
+          slides[current].classList.add('active');
         }, 5000);
       }
-    });
+    })();
   </script>
-  {% endif %}
+</div>
 
-  {% if page.header.overlay_color or page.header.overlay_image or has_slider %}
+{% else %}
+<div class="page__hero{% if page.header.overlay_color or page.header.overlay_image %}--overlay{% endif %}"
+  style="{% if page.header.overlay_color %}background-color: {{ page.header.overlay_color | default: 'transparent' }};{% endif %} {% if overlay_img_path %}background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ overlay_img_path }}');{% endif %}">
+  {% if page.header.overlay_color or page.header.overlay_image %}
   <div class="wrapper">
     <h1 class="page__title" itemprop="headline">
       {% if paginator %}
@@ -125,3 +118,4 @@
   <span class="page__hero-caption">{{ page.header.caption | markdownify | remove: "<p>" | remove: "</p>" }}</span>
   {% endif %}
 </div>
+{% endif %}
