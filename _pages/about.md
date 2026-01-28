@@ -13,7 +13,7 @@ redirect_from:
   - /about.html
 ---
 
-I am a Ph.D. student at [TU Graz](https://www.tugraz.at/home), supervised by [Prof. Olga Saukh](https://sites.google.com/view/olgasaukh/home) at the [Embedded Learning and Sensing Systems (ELSS) Group](https://www.tugraz.at/en/arbeitsgruppen/iti-teams/elss/team-contact), Institute for Technical Informatics, TU Graz, Austria. Previously I finished my Master majoring in Electromobility at [University of Stuttgart](https://www.uni-stuttgart.de/en/) in Stuttgart, Germany, supervised by [Prof. Bin Yang](https://www.iss.uni-stuttgart.de/institut/team/Yang-00004/) at the [Institute of Information Systems and Software Technology](https://www.iss.uni-stuttgart.de/). Before that, I got my Bachelor degree at [China University of Petroleum](https://english.upc.edu.cn/) in Qingdao, China.
+I am a Ph.D. student at [TU Graz](https://www.tugraz.at/home), supervised by [Prof. Olga Saukh](https://sites.google.com/view/olgasaukh/home) at the [Embedded Learning and Sensing Systems (ELSS) Group](https://www.tugraz.at/en/arbeitsgruppen/iti-teams/elss/team-contact), Institute for Technical Informatics, TU Graz, Austria. Previously I finished my Master majoring in Electromobility at [University of Stuttgart](https://www.uni-stuttgart.de/en/) in Stuttgart, Germany, supervised by [Prof. Bin Yang](https://www.iss.uni-stuttgart.de/institut/team/Yang-00004/) at the [Institute of Signal Processing and System Theory](https://www.iss.uni-stuttgart.de/). Before that, I got my Bachelor degree at [China University of Petroleum](https://english.upc.edu.cn/) in Qingdao, China.
 
 
 <div id="news" style="margin-top: 60px;"></div>
