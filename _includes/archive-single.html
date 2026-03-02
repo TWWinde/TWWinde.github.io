@@ -25,8 +25,16 @@
 
     <div class="publication-content">
       <h2 class="archive__item-title" itemprop="headline">
-        {% if post.venue %}<span class="pub-venue-tag">[{{ post.venue_short | default: post.venue }}]</span> {% endif
-        %}{{ title }}
+        {% if post.venue %}
+        <span class="pub-venue-tag">
+          {% if post.venueurl %}
+          <a href="{{ post.venueurl }}" style="color: inherit;">[{{ post.venue_short | default: post.venue }}]</a>
+          {% else %}
+          [{{ post.venue_short | default: post.venue }}]
+          {% endif %}
+        </span>
+        {% endif %}
+        {{ title }}
       </h2>
 
       <div class="publication-authors">
