@@ -65,7 +65,7 @@ News
 </style>
 
 <ul class="news-list">
-  <li><span class="news-date">[Jan. 2026]</span> Our Paper <span class="news-highlight">GRAIL: Post-hoc Compensation by Linear Reconstruction for Compressed Networks</span> was accepted at <span class="news-highlight">CPAL'26</span>.</li>
+  <li><span class="news-date">[Jan. 2026]</span> Our Paper <span class="news-highlight">GRAIL: Post-hoc Compensation by Linear Reconstruction for Compressed Networks</span> was accepted at <span class="news-highlight"><a href="https://cpal.cc/" style="color: inherit; text-decoration: underline;">CPAL'26</a></span>.</li>
   <li><span class="news-date">[Sep. 2025]</span> I started my PhD at TU Graz, Austria.</li>
   <!-- Example of how to add a paper with links (uncomment to use)
   <li><span class="news-date">[Dec. 2025]</span> Our paper on <span class="news-highlight">Efficient ML</span> was accepted at <span class="news-highlight">ICLR'26</span>. 
