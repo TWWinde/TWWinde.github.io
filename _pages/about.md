@@ -94,6 +94,6 @@ Blog
 *   [Blog Post number 4](/posts/2015/08/blog-post-4/)
 *   [Blog Post number 3](/posts/2014/08/blog-post-3/)
 *   [Blog Post number 2](/posts/2013/08/blog-post-2/)
-*   [Flow Matching and Diffusion Models Learning Notes](/posts/2012/08/blog-post-1/)
+*   [Flow Matching and Diffusion Models Learning Notes](/posts/2025/08/blog-post-1/)
 
 
