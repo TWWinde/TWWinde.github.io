@@ -27,14 +27,14 @@
 
     .publication-thumbnail {
         width: 100% !important;
-        max-width: 550px;
+        max-width: 450px;
         margin-bottom: 15px;
     }
 }
 
 .publication-thumbnail {
-    width: 550px;
-    min-width: 550px;
+    width: 450px;
+    min-width: 450px;
     flex-shrink: 0;
     display: flex;
     align-items: flex-start;
