@@ -97,3 +97,9 @@ Blog
 *   [Flow Matching and Diffusion Models Learning Notes](/posts/2025/08/blog-post-1/)
 
 
+<div id="visitor-map" style="margin-top: 60px;"></div>
+<hr style="border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)); margin: 20px 0;">
+
+<div style="width: 100%; display: flex; justify-content: center;">
+  <script type="text/javascript" id="mapmyvisitors" src="https://mapmyvisitors.com/map.js?cl=ffffff&w=a&t=n&d=SX29sULPnpyIEVjJl-Qu1xsJlgUOdgoc0ZECpMMrr6c"></script>
+</div>
