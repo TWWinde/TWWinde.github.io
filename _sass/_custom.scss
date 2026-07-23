@@ -58,7 +58,7 @@ a {
 }
 
 .page__hero--overlay {
-  min-height: clamp(260px, 35vw, 430px);
+  min-height: clamp(210px, 26vw, 320px);
   display: grid;
   align-items: end;
   border-radius: 0 0 28px 28px;
@@ -75,8 +75,8 @@ a {
 
 .page__hero--overlay .wrapper {
   width: 100%;
-  padding-top: clamp(4rem, 10vw, 8rem);
-  padding-bottom: clamp(2.5rem, 6vw, 5rem);
+  padding-top: clamp(3rem, 7vw, 5rem);
+  padding-bottom: clamp(2rem, 4vw, 3.25rem);
 }
 
 .page__hero--overlay .page__title {
