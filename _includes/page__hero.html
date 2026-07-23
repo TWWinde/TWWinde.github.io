@@ -45,6 +45,7 @@
     {% endfor %}
   </div>
   <div class="wrapper" style="position: relative; z-index: 2;">
+    {% unless page.url == "/" %}
     <h1 class="page__title" itemprop="headline">
       {% if paginator %}
       {{ site.title }}{% unless paginator.page == 1 %} {{ site.data.ui-text[site.locale].page | default: "Page" }} {{
@@ -53,8 +54,9 @@
       {{ page.title | default: site.title | markdownify | remove: "<p>" | remove: "</p>" }}
       {% endif %}
     </h1>
+    {% endunless %}
     {% if page.excerpt %}
-    <p class="page__lead" style="color: #fff !important;">{{ page.excerpt | markdownify | remove: "
+    <p class="page__lead{% if page.url == "/" %} page__lead--home{% endif %}" style="color: #fff !important;">{{ page.excerpt | markdownify | remove: "
     <p>" | remove: "</p>" }}</p>
     {% endif %}
     {% if site.read_time and page.read_time %}
@@ -91,6 +93,7 @@
   style="{% if page.header.overlay_color %}background-color: {{ page.header.overlay_color | default: 'transparent' }};{% endif %} {% if overlay_img_path %}background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ overlay_img_path }}');{% endif %}">
   {% if page.header.overlay_color or page.header.overlay_image %}
   <div class="wrapper">
+    {% unless page.url == "/" %}
     <h1 class="page__title" itemprop="headline">
       {% if paginator %}
       {{ site.title }}{% unless paginator.page == 1 %} {{ site.data.ui-text[site.locale].page | default: "Page" }} {{
@@ -99,8 +102,9 @@
       {{ page.title | default: site.title | markdownify | remove: "<p>" | remove: "</p>" }}
       {% endif %}
     </h1>
+    {% endunless %}
     {% if page.excerpt %}
-    <p class="page__lead" style="color: #fff !important;">{{ page.excerpt | markdownify | remove: "
+    <p class="page__lead{% if page.url == "/" %} page__lead--home{% endif %}" style="color: #fff !important;">{{ page.excerpt | markdownify | remove: "
     <p>" | remove: "</p>" }}</p>
     {% endif %}
     {% if site.read_time and page.read_time %}

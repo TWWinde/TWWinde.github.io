@@ -94,6 +94,15 @@ a {
   font-size: clamp(1rem, 2vw, 1.3rem);
 }
 
+.page__hero--overlay .page__lead--home {
+  max-width: 760px;
+  font-size: clamp(2rem, 4.5vw, 3.8rem);
+  font-weight: 750;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.28);
+}
+
 .sidebar {
   padding-top: 2.5rem;
 }
