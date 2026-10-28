@@ -175,6 +175,12 @@ a {
   margin-top: 0;
 }
 
+.home-intro a,
+.home-intro a:hover,
+.home-intro a:focus {
+  text-decoration: none;
+}
+
 .home-focus {
   display: flex;
   flex-wrap: wrap;
