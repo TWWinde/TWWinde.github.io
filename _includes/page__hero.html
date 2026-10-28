@@ -30,7 +30,7 @@
 {% endif %}
 
 {% if has_slider %}
-<div class="page__hero--overlay" style="position: relative; overflow: hidden;">
+<div class="page__hero--overlay{% if page.url == '/' %} page__hero--home{% endif %}" style="position: relative; overflow: hidden;">
   <div class="hero-slider" id="heroSlider"
     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
     {% for img in page.header.overlay_images %}
@@ -56,8 +56,7 @@
     </h1>
     {% endunless %}
     {% if page.excerpt %}
-    <p class="page__lead{% if page.url == "/" %} page__lead--home{% endif %}" style="color: #fff !important;">{{ page.excerpt | markdownify | remove: "
-    <p>" | remove: "</p>" }}</p>
+    <p class="page__lead{% if page.url == "/" %} page__lead--home{% endif %}" style="color: #fff !important;">{{ page.excerpt | markdownify | strip_html | strip }}</p>
     {% endif %}
     {% if site.read_time and page.read_time %}
     <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
@@ -89,7 +88,7 @@
 </div>
 
 {% else %}
-<div class="page__hero{% if page.header.overlay_color or page.header.overlay_image %}--overlay{% endif %}"
+<div class="page__hero{% if page.header.overlay_color or page.header.overlay_image %}--overlay{% endif %}{% if page.url == '/' %} page__hero--home{% endif %}"
   style="{% if page.header.overlay_color %}background-color: {{ page.header.overlay_color | default: 'transparent' }};{% endif %} {% if overlay_img_path %}background-image: {% if overlay_filter %}linear-gradient({{ overlay_filter }}, {{ overlay_filter }}), {% endif %}url('{{ overlay_img_path }}');{% endif %}">
   {% if page.header.overlay_color or page.header.overlay_image %}
   <div class="wrapper">
@@ -104,8 +103,7 @@
     </h1>
     {% endunless %}
     {% if page.excerpt %}
-    <p class="page__lead{% if page.url == "/" %} page__lead--home{% endif %}" style="color: #fff !important;">{{ page.excerpt | markdownify | remove: "
-    <p>" | remove: "</p>" }}</p>
+    <p class="page__lead{% if page.url == "/" %} page__lead--home{% endif %}" style="color: #fff !important;">{{ page.excerpt | markdownify | strip_html | strip }}</p>
     {% endif %}
     {% if site.read_time and page.read_time %}
     <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>

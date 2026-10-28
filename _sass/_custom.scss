@@ -103,6 +103,27 @@ a {
   text-shadow: 0 2px 28px rgba(0, 0, 0, 0.28);
 }
 
+/* Override the theme's 14em vertical padding for the homepage banner. */
+.page__hero--home {
+  display: flex;
+  height: clamp(200px, 24vw, 280px);
+  min-height: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.page__hero--home::before {
+  display: none;
+}
+
+.page__hero--home .wrapper {
+  padding: 1.5rem;
+}
+
+.page__hero--home .page__lead {
+  margin-top: 0;
+}
+
 .sidebar {
   padding-top: 2.5rem;
 }
