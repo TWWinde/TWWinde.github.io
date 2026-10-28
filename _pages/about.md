@@ -16,7 +16,7 @@ redirect_from:
 
 <div class="home-intro">
   <p>I am a Ph.D. student at <a href="https://www.tugraz.at/home">TU Graz</a>, supervised by <a href="https://sites.google.com/view/olgasaukh/home">Prof. Olga Saukh</a> at the <a href="https://www.tugraz.at/en/arbeitsgruppen/iti-teams/elss/team-contact">Embedded Learning and Sensing Systems (ELSS) Group</a>, Institute for Technical Informatics, TU Graz, Austria.</p>
-  <p>Previously, I completed my Master's degree in Electromobility at the <a href="https://www.uni-stuttgart.de/en/">University of Stuttgart</a>, supervised by <a href="https://www.iss.uni-stuttgart.de/institut/team/Yang-00004/">Prof. Bin Yang</a> at the <a href="https://www.iss.uni-stuttgart.de/">Institute of Signal Processing and System Theory</a>. I received my Bachelor's degree from <a href="https://english.upc.edu.cn/">China University of Petroleum</a> in Qingdao, China.</p>
+  <p>Previously, I completed my Master's degree in Electromobility at the <a href="https://www.uni-stuttgart.de/en/">University of Stuttgart</a>, Germany, supervised by <a href="https://www.iss.uni-stuttgart.de/institut/team/Yang-00004/">Prof. Bin Yang</a> at the <a href="https://www.iss.uni-stuttgart.de/">Institute of Signal Processing and System Theory</a>. I received my Bachelor's degree from <a href="https://english.upc.edu.cn/">China University of Petroleum</a> in Qingdao, China.</p>
   <div class="home-focus" aria-label="Research interests">
     <span>Efficient Machine Learning</span>
     <span>Model Compression</span>
