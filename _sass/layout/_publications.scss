@@ -15,28 +15,11 @@
     overflow: visible;
 }
 
-/* Mobile responsive: stack vertically */
-@media (max-width: 768px) {
-    .publication-card {
-        flex-direction: column;
-    }
-
-    .publication-content {
-        padding-left: 0 !important;
-    }
-
-    .publication-thumbnail {
-        width: 100% !important;
-        max-width: 450px;
-        margin-right: 0;
-        margin-bottom: 15px;
-    }
-}
-
 .publication-thumbnail {
     width: 450px;
+    max-width: 60%;
     min-width: 0;
-    flex-shrink: 0;
+    flex: 0 1 450px;
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -46,6 +29,8 @@
 .publication-thumbnail img,
 .publication-thumbnail video {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     height: auto;
     border-radius: 0;
     box-shadow: none;
@@ -58,7 +43,23 @@
 
 .publication-content {
     flex: 1;
+    min-width: 0;
     padding-left: 0;
+}
+
+/* Place mobile rules after the base rules so margins reset correctly. */
+@media (max-width: 768px) {
+    .publication-card {
+        flex-direction: column;
+    }
+
+    .publication-thumbnail {
+        width: 100%;
+        max-width: 450px;
+        flex: 0 1 auto;
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
 }
 
 .publication-card .archive__item-title {

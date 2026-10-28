@@ -18,6 +18,7 @@
     {% if post.header.video %}
     <div class="publication-thumbnail">
       <video autoplay muted loop playsinline controls preload="metadata"
+        style="display: block; width: 100%; max-width: 100%; min-width: 0; height: auto;"
         aria-label="{{ title | strip_html | escape }} — video comparison">
         <source src="{{ post.header.video | relative_url }}" type="video/mp4">
         <a href="{{ post.header.video | relative_url }}">Watch the video comparison</a>
