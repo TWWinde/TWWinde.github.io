@@ -57,6 +57,36 @@ a {
   max-width: 1280px;
 }
 
+/* Use the space previously reserved by the theme for a right sidebar. */
+@media (min-width: 925px) {
+  .wide-layout #main,
+  .wide-layout .masthead__inner-wrap {
+    width: calc(100% - 64px);
+    max-width: 1680px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .wide-layout #main > .sidebar {
+    width: 220px;
+    max-width: 220px;
+  }
+
+  .wide-layout #main > .page,
+  .wide-layout #main > .archive {
+    width: calc(100% - 260px);
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+    float: right;
+  }
+
+  .wide-layout .home-intro {
+    max-width: 85ch;
+  }
+}
+
 .page__hero--overlay {
   min-height: clamp(210px, 26vw, 320px);
   display: grid;
