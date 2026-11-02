@@ -57,6 +57,26 @@ a {
   max-width: 1280px;
 }
 
+.home-page #main {
+  margin-top: 1rem;
+}
+
+.home-page #main > .page {
+  padding-top: 0;
+}
+
+@media (min-width: 925px) {
+  .home-page #main > .sidebar {
+    position: sticky;
+    top: 5rem;
+    height: auto;
+    max-height: calc(100vh - 6rem);
+    /* The legacy navigation script adds padding for a fixed sidebar. */
+    padding-top: 0 !important;
+    margin-top: 0;
+  }
+}
+
 /* Use the space previously reserved by the theme for a right sidebar. */
 @media (min-width: 925px) {
   .wide-layout #main,
