@@ -15,6 +15,7 @@
 <div class="{{ include.type | default: " list" }}__item">
   {% if post.collection == 'publications' %}
   <article class="archive__item publication-card" itemscope itemtype="http://schema.org/CreativeWork">
+    <time class="publication-year" datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: '%Y' }}</time>
     {% if post.header.video %}
     <div class="publication-thumbnail">
       <video autoplay muted loop playsinline controls preload="metadata"
@@ -34,37 +35,36 @@
 
     <div class="publication-content">
       <h2 class="archive__item-title" itemprop="headline">
-        {% if post.venue %}
-        <span class="pub-venue-tag">
-          {% if post.venueurl %}
-          <a href="{{ post.venueurl }}" style="color: inherit;">[{{ post.venue_short | default: post.venue }}]</a>
-          {% else %}
-          [{{ post.venue_short | default: post.venue }}]
-          {% endif %}
-        </span>
-        {% endif %}
-        {{ title }}
+        <a href="{{ post.url | relative_url }}">{{ title }}</a>
       </h2>
 
       <div class="publication-authors">
-        {{ post.authors | default: post.citation | markdownify | remove: "<p>" | remove: "</p>" }}
+        {{ post.authors | default: post.citation | markdownify | remove: "<p>" | remove: "</p>" | replace: 'Wenwu Tang</a>', '<strong>Wenwu Tang</strong></a>' }}
       </div>
 
+      {% if post.venue %}
+      <div class="publication-venue">
+        <span class="pub-venue-tag">
+          {% if post.venueurl %}<a href="{{ post.venueurl }}">{{ post.venue_short | default: post.venue }}</a>{% else %}{{ post.venue_short | default: post.venue }}{% endif %}
+        </span>
+        {% if post.venue == 'Preprint' %}
+          {% if post.paperurl contains 'arxiv.org' %}<span class="publication-venue-name">arXiv preprint</span>{% endif %}
+        {% else %}
+          <span class="publication-venue-name">{{ post.venue }}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
       <div class="publication-buttons">
+        <a href="{% if post.projecturl %}{{ post.projecturl }}{% else %}{{ post.url | relative_url }}{% endif %}" class="pub-link pub-link--page" aria-label="Project page for {{ title | strip_html | escape }}">Page</a>
         {% if post.paperurl %}
-        <a href="{{ post.paperurl }}" class="pub-link">Paper</a>
+        <a href="{{ post.paperurl }}" class="pub-link pub-link--paper">{% if post.paperurl contains 'arxiv.org' %}arXiv{% else %}Paper{% endif %}</a>
         {% endif %}
         {% if post.codeurl %}
-        {% if post.paperurl %}<span class="pub-divider">|</span>{% endif %}
-        <a href="{{ post.codeurl }}" class="pub-link">Code</a>
-        {% endif %}
-        {% if post.projecturl %}
-        {% if post.paperurl or post.codeurl %}<span class="pub-divider">|</span>{% endif %}
-        <a href="{{ post.projecturl }}" class="pub-link">Project</a>
+        <a href="{{ post.codeurl }}" class="pub-link pub-link--code">Code</a>
         {% endif %}
         {% if post.slidesurl %}
-        {% if post.paperurl or post.codeurl or post.projecturl %}<span class="pub-divider">|</span>{% endif %}
-        <a href="{{ post.slidesurl }}" class="pub-link">Slides</a>
+        <a href="{{ post.slidesurl }}" class="pub-link pub-link--slides">Slides</a>
         {% endif %}
       </div>
     </div>

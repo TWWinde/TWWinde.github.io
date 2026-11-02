@@ -259,7 +259,7 @@ a {
   font-weight: 650;
 }
 
-.page__content .archive__item {
+.page__content .archive__item:not(.publication-card) {
   margin-bottom: 1rem;
   padding: 1.25rem;
   border: 1px solid var(--border-soft);
@@ -269,7 +269,7 @@ a {
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
-.page__content .archive__item:hover {
+.page__content .archive__item:not(.publication-card):hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-soft);
 }
