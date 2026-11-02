@@ -63,6 +63,9 @@
         {% if post.codeurl %}
         <a href="{{ post.codeurl }}" class="pub-link pub-link--code">Code</a>
         {% endif %}
+        {% if post.huggingfaceurl %}
+        <a href="{{ post.huggingfaceurl }}" class="pub-link pub-link--weights">Hugging Face</a>
+        {% endif %}
         {% if post.slidesurl %}
         <a href="{{ post.slidesurl }}" class="pub-link pub-link--slides">Slides</a>
         {% endif %}

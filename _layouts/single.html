@@ -60,6 +60,15 @@ layout: default
       <section class="page__content" itemprop="text">
         {{ content }}
 
+        {% if page.collection == 'publications' %}
+        <div class="publication-buttons">
+          {% if page.projecturl %}<a href="{{ page.projecturl }}" class="pub-link pub-link--page">Page</a>{% endif %}
+          {% if page.paperurl %}<a href="{{ page.paperurl }}" class="pub-link pub-link--paper">{% if page.paperurl contains 'arxiv.org' %}arXiv{% else %}Paper{% endif %}</a>{% endif %}
+          {% if page.codeurl %}<a href="{{ page.codeurl }}" class="pub-link pub-link--code">Code</a>{% endif %}
+          {% if page.huggingfaceurl %}<a href="{{ page.huggingfaceurl }}" class="pub-link pub-link--weights">Hugging Face</a>{% endif %}
+        </div>
+        {% endif %}
+
         {% if page.citation and page.paperurl and page.slidesurl and page.bibtexurl %}
         <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a
             href="{{ page.paperurl }}">Download Paper</a> | <a href="{{ page.slidesurl }}">Download Slides</a> | <a
