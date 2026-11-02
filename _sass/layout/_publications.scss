@@ -1,7 +1,7 @@
 /* Compact bibliography: year, media preview, and publication details. */
 .publication-card {
     display: grid;
-    grid-template-columns: 48px minmax(150px, 300px) minmax(0, 1fr);
+    grid-template-columns: 48px minmax(150px, 360px) minmax(0, 1fr);
     gap: 20px;
     align-items: start;
     margin: 0 0 2.5rem;
@@ -28,7 +28,7 @@
     justify-content: center;
     width: 100%;
     min-width: 0;
-    aspect-ratio: 3 / 2;
+    aspect-ratio: 2 / 1;
     overflow: hidden;
     border: 1px solid var(--border-soft, #e4e7e5);
     border-radius: 12px;
@@ -41,7 +41,7 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    height: auto;
+    height: 100%;
     max-height: 100%;
     margin: 0;
     object-fit: contain;
@@ -134,13 +134,17 @@ html[data-theme="dark"] .publication-authors { color: #bfc7cb; }
 html[data-theme="dark"] .publication-venue-name { color: #aeb8bc; }
 html[data-theme="dark"] .pub-venue-tag { background: rgba(94, 234, 158, 0.12); color: #82d9a5; }
 
+@media (min-width: 701px) and (max-width: 1199px) {
+    .publication-card { grid-template-columns: 48px minmax(150px, 30%) minmax(0, 1fr); }
+}
+
 @media (max-width: 700px) {
-    .publication-card { grid-template-columns: 42px 140px minmax(0, 1fr); gap: 14px; }
+    .publication-card { grid-template-columns: 42px 180px minmax(0, 1fr); gap: 14px; }
 }
 
 @media (max-width: 540px) {
     .publication-card { grid-template-columns: 44px minmax(0, 1fr); gap: 12px; margin-bottom: 2.25rem; }
-    .publication-thumbnail { grid-column: 2; max-width: 280px; }
+    .publication-thumbnail { grid-column: 2; }
     .publication-content { grid-column: 2; }
     .publication-card .archive__item-title { font-size: 1.05rem; }
     .publication-buttons .pub-link { min-height: 36px; }
