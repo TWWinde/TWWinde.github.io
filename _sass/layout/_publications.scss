@@ -1,7 +1,7 @@
 /* Compact bibliography: year, media preview, and publication details. */
 .publication-card {
     display: grid;
-    grid-template-columns: 48px minmax(150px, 240px) minmax(0, 1fr);
+    grid-template-columns: 48px minmax(150px, 300px) minmax(0, 1fr);
     gap: 20px;
     align-items: start;
     margin: 0 0 2.5rem;
