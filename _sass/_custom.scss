@@ -279,6 +279,7 @@ a {
 }
 
 .news-list {
+  color: #000;
   display: grid;
   gap: 0.85rem;
   margin: 0;
@@ -299,7 +300,7 @@ a {
 }
 
 .news-date {
-  color: var(--accent-strong);
+  color: inherit;
   font-size: 0.82rem;
   font-weight: 800;
   white-space: nowrap;
@@ -307,6 +308,10 @@ a {
 
 .news-highlight {
   font-weight: 650;
+}
+
+html[data-theme="dark"] .news-list {
+  color: #fff;
 }
 
 .page__content .archive__item:not(.publication-card) {
