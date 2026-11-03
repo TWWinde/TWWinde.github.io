@@ -5,7 +5,7 @@ excerpt: "Welcome to my homepage! 👋"
 author_profile: true
 header:
   overlay_images: 
-    - hero-qingdao.png
+    - hero-qingdao-campus.png
     - hero-stuttgart.png
     - hero-graz.png
   overlay_filter: 0.2
