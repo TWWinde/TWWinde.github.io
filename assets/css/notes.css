@@ -10,9 +10,9 @@
   --nb-danger: #c2410c;
   --nb-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   box-sizing: border-box;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 1rem 1.25rem 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.75rem clamp(0.75rem, 1.2vw, 1.25rem) 1rem;
   color: var(--nb-text);
   font-size: 15px;
 }
@@ -53,8 +53,8 @@ html[data-theme="dark"] .nb-btn--primary { color: #0b2b28; }
 
 /* app grid */
 .nb-app {
-  display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 1rem;
-  height: calc(100dvh - 110px); min-height: 480px;
+  display: grid; grid-template-columns: clamp(240px, 18vw, 340px) minmax(0, 1fr); gap: 0.75rem;
+  height: calc(100dvh - 100px); min-height: 480px;
 }
 .nb-side, .nb-main {
   background: var(--nb-surface); border: 1px solid var(--nb-border); border-radius: 12px;
