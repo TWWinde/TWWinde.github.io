@@ -8,7 +8,7 @@ notes_api: "https://twwinde-notebook.twwinde-notebook.workers.dev"
 ---
 {% include base_path %}
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="{{ base_path }}/assets/css/notes.css">
+<link rel="stylesheet" href="{{ base_path }}/assets/css/notes.css?v={{ site.time | date: '%s' }}">
 
 <div id="notebook" class="nb" data-api="{{ page.notes_api }}">
   <section class="nb-signin" id="nb-signin" hidden>
@@ -24,7 +24,10 @@ notes_api: "https://twwinde-notebook.twwinde-notebook.workers.dev"
     <aside class="nb-side" id="nb-side">
       <div class="nb-side__top">
         <input type="search" id="nb-search" class="nb-input" placeholder="Search notes" aria-label="Search notes">
-        <button type="button" class="nb-btn nb-btn--primary" id="nb-new" title="New note">New</button>
+        <div class="nb-side__actions">
+          <button type="button" class="nb-btn nb-btn--primary" id="nb-new" title="New note">+ Note</button>
+          <button type="button" class="nb-btn" id="nb-new-folder" title="New folder">+ Folder</button>
+        </div>
       </div>
       <nav class="nb-tree" id="nb-tree" aria-label="Notes"></nav>
       <div class="nb-side__foot">
@@ -63,4 +66,4 @@ notes_api: "https://twwinde-notebook.twwinde-notebook.workers.dev"
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
-<script src="{{ base_path }}/assets/js/notes.js"></script>
+<script src="{{ base_path }}/assets/js/notes.js?v={{ site.time | date: '%s' }}"></script>

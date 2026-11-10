@@ -44,6 +44,7 @@ function renderPage() {
   const content = src
     .replace("{% include base_path %}", "")
     .replace(/\{\{ base_path \}\}/g, "")
+    .replace(/\{\{ site\.time[^}]*\}\}/g, String(Date.now()))
     .replace("{{ page.notes_api }}", "http://localhost:8787");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

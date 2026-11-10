@@ -15,7 +15,7 @@
   const $ = (id) => document.getElementById(id);
   const el = {
     signin: $("nb-signin"), signinError: $("nb-signin-error"), login: $("nb-login"),
-    app: $("nb-app"), side: $("nb-side"), search: $("nb-search"), newBtn: $("nb-new"), tree: $("nb-tree"),
+    app: $("nb-app"), side: $("nb-side"), search: $("nb-search"), newBtn: $("nb-new"), newFolderBtn: $("nb-new-folder"), tree: $("nb-tree"),
     user: $("nb-user"), logout: $("nb-logout"), toggleSide: $("nb-toggle-side"),
     path: $("nb-path"), status: $("nb-status"), save: $("nb-save"), del: $("nb-delete"),
     conflict: $("nb-conflict"), conflictLoad: $("nb-conflict-load"), conflictOverwrite: $("nb-conflict-overwrite"),
@@ -24,6 +24,7 @@
 
   const state = {
     files: [],
+    folders: [], // explicit folders [{ path, sha }] — kept by a placeholder file, may be empty
     current: null, // { path, sha, saved } — saved = last content known to be on GitHub
     dirty: false,
     saving: null, // Promise while a save is in flight
@@ -100,34 +101,37 @@
   const dirOf = (path) => (path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
   const baseOf = (path) => path.slice(path.lastIndexOf("/") + 1);
   let dragPath = null;
+  const FOLDER_PLUS_SVG = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" d="M1.5 4V12.5a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V5.5a1 1 0 0 0-1-1H8L6.5 2.5h-4a1 1 0 0 0-1 1z"/><path stroke="currentColor" stroke-width="1.4" d="M8 7v4.5M5.75 9.25h4.5"/></svg>';
 
-  function buildTree(files) {
+  function buildTree(files, folders) {
     const root = { path: "", dirs: new Map(), files: [] };
-    for (const f of files) {
-      const parts = f.path.split("/");
+    const ensure = (parts) => {
       let node = root;
-      for (const name of parts.slice(0, -1)) {
+      for (const name of parts) {
         if (!node.dirs.has(name)) node.dirs.set(name, { name, path: node.path ? node.path + "/" + name : name, dirs: new Map(), files: [] });
         node = node.dirs.get(name);
       }
-      node.files.push(f);
-    }
+      return node;
+    };
+    for (const d of folders) ensure(d.path.split("/")).keep = d.sha;
+    for (const f of files) ensure(f.path.split("/").slice(0, -1)).files.push(f);
     return root;
   }
 
   function renderTree() {
     const q = el.search.value.trim().toLowerCase();
     const files = state.files.filter((f) => !q || f.path.toLowerCase().includes(q));
+    const folders = q ? state.folders.filter((d) => d.path.toLowerCase().includes(q)) : state.folders;
     el.tree.textContent = "";
     el.tree.dataset.dropDir = "";
-    if (!files.length) {
+    if (!files.length && !folders.length) {
       const p = document.createElement("p");
       p.className = "nb-tree__empty";
       p.textContent = q ? "No matching notes." : "No notes yet. Click New.";
       el.tree.append(p);
       return;
     }
-    el.tree.append(renderNode(buildTree(files), 0, !!q));
+    el.tree.append(renderNode(buildTree(files, folders), 0, !!q));
   }
 
   function renderNode(node, depth, expandAll) {
@@ -154,51 +158,49 @@
         saveCollapsed();
         renderTree();
       });
-      const add = document.createElement("button");
-      add.type = "button";
-      add.className = "nb-folder__add";
-      add.title = "New note in " + dir.path;
-      add.setAttribute("aria-label", add.title);
-      add.textContent = "+";
-      add.addEventListener("click", () => createNote(dir.path + "/"));
-      row.append(toggle, add);
+      const actions = document.createElement("span");
+      actions.className = "nb-folder__actions";
+      const action = (label, title, fn) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "nb-folder__add";
+        b.title = title;
+        b.setAttribute("aria-label", title);
+        b.innerHTML = label;
+        b.addEventListener("click", (e) => { e.stopPropagation(); fn(); });
+        actions.append(b);
+      };
+      action("+", "New note in " + dir.path, () => createNote(dir.path + "/"));
+      action(FOLDER_PLUS_SVG, "New folder in " + dir.path, () => createFolder(dir.path));
+      if (dir.keep && !dir.files.length && !dir.dirs.size) action("&times;", "Delete empty folder " + dir.path, () => deleteFolder(dir));
+      row.append(toggle, actions);
       li.append(row);
       if (open) li.append(renderNode(dir, depth + 1, expandAll));
       ul.append(li);
     }
     for (const f of [...node.files].sort((a, b) => byName(a.path, b.path))) {
       const li = document.createElement("li");
-      const b = document.createElement("button");
-      b.type = "button";
+      // A div, not a <button>: Firefox (and sometimes Safari) will not start a drag on buttons.
+      const b = document.createElement("div");
+      b.setAttribute("role", "button");
+      b.tabIndex = 0;
       b.className = "nb-note";
       b.textContent = baseOf(f.path).replace(/\.md$/i, "");
       b.title = f.path;
       b.style.setProperty("--depth", depth);
       b.dataset.dropDir = node.path;
-      b.draggable = true;
       if (state.current && state.current.path === f.path) b.setAttribute("aria-current", "true");
       if (readDraft(f.path)) b.classList.add("has-draft");
       b.addEventListener("click", () => openNote(f.path));
-      b.addEventListener("dragstart", (e) => {
-        dragPath = f.path;
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", f.path);
-        b.classList.add("is-dragging");
-        el.tree.classList.add("is-dragging");
-      });
-      b.addEventListener("dragend", () => {
-        dragPath = null;
-        b.classList.remove("is-dragging");
-        el.tree.classList.remove("is-dragging");
-        clearDropHighlight();
-      });
+      b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openNote(f.path); } });
+      b.addEventListener("pointerdown", (e) => beginPress(e, f.path, b));
       li.append(b);
       ul.append(li);
     }
     return ul;
   }
 
-  /* drag & drop: drop a note on a folder (or a note inside it) to move it there; on empty space for top level */
+  /* drop targets: a folder row (or a note inside it) moves the note there; empty space means top level */
   let hoverTimer = null, hoverDir = null;
   function dropDirFor(target) {
     const hit = target.closest && target.closest("[data-drop-dir]");
@@ -214,38 +216,115 @@
     if (dir === hoverDir) return;
     clearDropHighlight();
     hoverDir = dir;
-    if (dir === "") { el.tree.classList.add("is-drop"); return; }
+    if (dir === "") { el.tree.classList.add("is-drop"); if (drag.zone) drag.zone.classList.add("is-drop"); return; }
     const row = [...el.tree.querySelectorAll(".nb-folder")].find((r) => r.dataset.dropDir === dir);
     if (row) row.classList.add("is-drop");
     // Hovering over a collapsed folder opens it so you can drop deeper.
     if (collapsed.has(dir)) hoverTimer = setTimeout(() => { collapsed.delete(dir); saveCollapsed(); renderTree(); hoverDir = null; }, 700);
   }
-  el.tree.addEventListener("dragover", (e) => {
-    if (!dragPath) return;
-    const dir = dropDirFor(e.target);
-    if (dir == null) return;
+
+  /* Pointer-based dragging (no HTML5 drag & drop, which is unreliable across browsers):
+     mouse/pen start after a few pixels of movement, touch after a long press. */
+  const drag = { path: null, el: null, x0: 0, y0: 0, active: false, ghost: null, timer: null, pointerId: null, type: "" };
+
+  function beginPress(e, path, node) {
+    if (e.button !== 0 || drag.path) return;
+    Object.assign(drag, { path, el: node, x0: e.clientX, y0: e.clientY, active: false, pointerId: e.pointerId, type: e.pointerType });
+    if (e.pointerType === "touch") drag.timer = setTimeout(() => startDrag(e.clientX, e.clientY), 420);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", cancelDrag);
+  }
+
+  function startDrag(x, y) {
+    drag.active = true;
+    dragPath = drag.path;
+    drag.el.classList.add("is-dragging");
+    el.tree.classList.add("is-dragging");
+    document.body.classList.add("nb-dragging");
+    const ghost = document.createElement("div");
+    ghost.className = "nb-ghost";
+    ghost.textContent = baseOf(drag.path).replace(/\.md$/i, "");
+    document.body.append(ghost);
+    drag.ghost = ghost;
+    // Always-visible target for moving to the top level, even when the list is full.
+    const zone = document.createElement("div");
+    zone.className = "nb-rootzone";
+    zone.dataset.dropDir = "";
+    zone.textContent = "Drop here to move to top level";
+    el.tree.append(zone);
+    drag.zone = zone;
+    moveGhost(x, y);
+    if (navigator.vibrate && drag.type === "touch") navigator.vibrate(15);
+  }
+
+  function moveGhost(x, y) {
+    if (drag.ghost) drag.ghost.style.transform = "translate(" + (x + 12) + "px," + (y + 10) + "px)";
+  }
+
+  function onPointerMove(e) {
+    if (e.pointerId !== drag.pointerId) return;
+    if (!drag.active) {
+      const moved = Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0);
+      if (drag.type === "touch") { if (moved > 10) cancelDrag(); return; } // finger moved first: it's a scroll
+      if (moved < 6) return;
+      startDrag(e.clientX, e.clientY);
+    }
     e.preventDefault();
-    e.dataTransfer.dropEffect = dir === dirOf(dragPath) ? "none" : "move";
-    highlightDrop(dir);
-  });
-  el.tree.addEventListener("dragleave", (e) => {
-    if (!el.tree.contains(e.relatedTarget)) clearDropHighlight();
-  });
-  el.tree.addEventListener("drop", (e) => {
-    if (!dragPath) return;
-    e.preventDefault();
-    const from = dragPath;
-    const dir = dropDirFor(e.target);
-    clearDropHighlight();
-    el.tree.classList.remove("is-dragging");
-    dragPath = null;
+    moveGhost(e.clientX, e.clientY);
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    const dir = target && el.tree.contains(target) ? (dropDirFor(target) ?? "") : null;
+    if (dir == null || dir === dirOf(drag.path)) clearDropHighlight();
+    else highlightDrop(dir);
+    // Auto-scroll the list near its edges.
+    const r = el.tree.getBoundingClientRect();
+    if (e.clientY < r.top + 28) el.tree.scrollTop -= 12;
+    else if (e.clientY > r.bottom - 28) el.tree.scrollTop += 12;
+  }
+
+  function onPointerUp(e) {
+    if (e.pointerId !== drag.pointerId) return;
+    const wasActive = drag.active;
+    const from = drag.path;
+    const dir = hoverDir;
+    cancelDrag();
+    if (!wasActive) return; // plain click: handled by the click listener
+    suppressClick();
     if (dir == null || dir === dirOf(from)) return;
     moveNote(from, (dir ? dir + "/" : "") + baseOf(from));
-  });
+  }
+
+  function cancelDrag() {
+    clearTimeout(drag.timer);
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+    window.removeEventListener("pointercancel", cancelDrag);
+    if (drag.el) drag.el.classList.remove("is-dragging");
+    if (drag.ghost) drag.ghost.remove();
+    if (drag.zone) drag.zone.remove();
+    el.tree.classList.remove("is-dragging");
+    document.body.classList.remove("nb-dragging");
+    clearDropHighlight();
+    Object.assign(drag, { path: null, el: null, active: false, ghost: null, zone: null, timer: null, pointerId: null });
+    dragPath = null;
+  }
+
+  // The click that follows a drag must not open the note.
+  function suppressClick() {
+    const stop = (e) => { e.stopPropagation(); e.preventDefault(); };
+    window.addEventListener("click", stop, { capture: true, once: true });
+    setTimeout(() => window.removeEventListener("click", stop, { capture: true }), 0);
+  }
+
+  // While dragging with a finger, stop the page from scrolling; Esc cancels a drag.
+  el.tree.addEventListener("touchmove", (e) => { if (drag.active) e.preventDefault(); }, { passive: false });
+  el.tree.addEventListener("contextmenu", (e) => { if (drag.path) e.preventDefault(); });
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape" && drag.path) cancelDrag(); });
 
   async function loadTree() {
     const data = await api("GET", "/api/tree");
     state.files = data.files;
+    state.folders = data.folders || [];
     renderTree();
   }
 
@@ -448,6 +527,40 @@
     }
   }
   el.newBtn.addEventListener("click", () => createNote());
+
+  async function createFolder(parent) {
+    const name = prompt(parent ? 'New folder inside "' + parent + '":' : "New folder name (use a/b for nested folders):", "");
+    if (name == null) return;
+    const rel = name.trim().replace(/\\/g, "/").replace(/\/+/g, "/").replace(/^\/|\/$/g, "");
+    if (!rel) return;
+    const path = parent ? parent + "/" + rel : rel;
+    if (state.folders.some((d) => d.path === path)) { alert('Folder "' + path + '" already exists.'); return; }
+    try {
+      setStatus("Creating folder…", "busy");
+      await api("POST", "/api/folder", { path });
+      for (let d = path; d; d = dirOf(d)) collapsed.delete(d);
+      saveCollapsed();
+      await loadTree();
+      setStatus("Folder created", "ok");
+    } catch (e) {
+      setStatus("Create folder failed: " + e.message, "error");
+    }
+  }
+  el.newFolderBtn.addEventListener("click", () => createFolder(""));
+
+  async function deleteFolder(dir) {
+    if (!confirm('Delete empty folder "' + dir.path + '"?')) return;
+    try {
+      setStatus("Deleting folder…", "busy");
+      await api("DELETE", "/api/folder", { path: dir.path, sha: dir.keep });
+      collapsed.delete(dir.path);
+      saveCollapsed();
+      await loadTree();
+      setStatus("Folder deleted", "ok");
+    } catch (e) {
+      setStatus("Delete folder failed: " + e.message, "error");
+    }
+  }
 
   /* Move or rename a note (also used by drag & drop). Returns true on success. */
   async function moveNote(from, to) {

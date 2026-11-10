@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { installFakeGitHub, testEnv as env } from "./fake-github.mjs";
-import worker, { checkPath, utf8ToB64, b64ToUtf8 } from "../worker.js";
+import worker, { checkPath, checkFolder, utf8ToB64, b64ToUtf8 } from "../worker.js";
 
 const gh = installFakeGitHub();
 const W = "https://nb.example.workers.dev";
@@ -92,7 +92,7 @@ test("disallowed origin gets no access", async () => {
 });
 
 test("create, list, read, update, conflict, rename, delete", async () => {
-  assert.deepEqual(await (await authed("/api/tree")).json(), { files: [] });
+  assert.deepEqual(await (await authed("/api/tree")).json(), { files: [], folders: [] });
 
   const content = "# 研究笔记\n\n" + "长文本 ".repeat(50);
   let res = await authed("/api/file", { method: "PUT", body: JSON.stringify({ path: "research/今天.md", content }) });
@@ -131,4 +131,32 @@ test("bad paths are rejected before touching GitHub", async () => {
   const res = await authed("/api/file", { method: "PUT", body: JSON.stringify({ path: "../escape.md", content: "x" }) });
   assert.equal(res.status, 400);
   assert.equal(gh.calls.length, before);
+});
+
+test("folder validation", () => {
+  assert.equal(checkFolder("/课程/机器学习/"), "课程/机器学习");
+  for (const bad of ["", "../x", "a/../b", ".github", "a//b", "a\\b", null]) {
+    assert.throws(() => checkFolder(bad), `${bad} should be rejected`);
+  }
+});
+
+test("empty folders: create, list, delete", async () => {
+  let res = await authed("/api/folder", { method: "POST", body: JSON.stringify({ path: "课程/机器学习" }) });
+  assert.equal(res.status, 200);
+  const { sha } = await res.json();
+  assert.ok(gh.files.has("课程/机器学习/.keep"));
+
+  res = await authed("/api/folder", { method: "POST", body: JSON.stringify({ path: "课程/机器学习" }) });
+  assert.equal(res.status, 409, "folder already exists");
+
+  const tree = await (await authed("/api/tree")).json();
+  assert.deepEqual(tree.folders, [{ path: "课程/机器学习", sha }]);
+  assert.ok(!tree.files.some((f) => f.path.includes(".keep")), "placeholder is not listed as a note");
+
+  res = await authed("/api/file?path=" + encodeURIComponent("课程/机器学习/.keep"));
+  assert.equal(res.status, 400, "placeholder cannot be opened as a note");
+
+  res = await authed("/api/folder", { method: "DELETE", body: JSON.stringify({ path: "课程/机器学习", sha }) });
+  assert.equal(res.status, 200);
+  assert.ok(!gh.files.has("课程/机器学习/.keep"));
 });

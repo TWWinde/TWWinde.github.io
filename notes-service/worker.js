@@ -17,6 +17,7 @@
 const GH_API = "https://api.github.com";
 const MAX_NOTE_BYTES = 1_000_000;
 const STATE_TTL_SECONDS = 30 * 60;
+const KEEP_FILE = ".keep";
 
 export default {
   async fetch(request, env) {
@@ -199,7 +200,7 @@ async function api(request, url, env, session) {
     case "GET /api/me":
       return json({ login: session.sub, repo: env.NOTES_REPO, exp: session.exp });
     case "GET /api/tree":
-      return json({ files: await listNotes(env) });
+      return json(await listNotes(env));
     case "GET /api/file":
       return json(await readNote(env, checkPath(url.searchParams.get("path"))));
     case "PUT /api/file": {
@@ -222,6 +223,19 @@ async function api(request, url, env, session) {
       await deleteNote(env, from, current.sha, `Rename ${from} -> ${to}`);
       return json(created);
     }
+    case "POST /api/folder": {
+      // Git has no empty folders, so a folder is kept alive by a hidden placeholder file.
+      const body = await readJson(request);
+      const dir = checkFolder(body.path);
+      const res = await writeNote(env, `${dir}/${KEEP_FILE}`, "", null, `Create folder ${dir}`);
+      return json({ path: dir, sha: res.sha });
+    }
+    case "DELETE /api/folder": {
+      const body = await readJson(request);
+      const dir = checkFolder(body.path);
+      await deleteNote(env, `${dir}/${KEEP_FILE}`, body.sha, `Delete folder ${dir}`);
+      return json({ ok: true });
+    }
     default:
       throw new HttpError(404, "not found");
   }
@@ -229,12 +243,19 @@ async function api(request, url, env, session) {
 
 async function listNotes(env) {
   const res = await gh(env, `/repos/${env.NOTES_REPO}/git/trees/${encodeURIComponent(branch(env))}?recursive=1`);
-  if (res.status === 404 || res.status === 409) return []; // empty repo / no branch yet
+  if (res.status === 404 || res.status === 409) return { files: [], folders: [] }; // empty repo / no branch yet
   await ensureOk(res);
   const data = await res.json();
-  return data.tree
-    .filter((e) => e.type === "blob" && e.path.toLowerCase().endsWith(".md") && !hiddenPath(e.path))
-    .map((e) => ({ path: e.path, sha: e.sha, size: e.size }));
+  const blobs = data.tree.filter((e) => e.type === "blob");
+  return {
+    files: blobs
+      .filter((e) => e.path.toLowerCase().endsWith(".md") && !hiddenPath(e.path))
+      .map((e) => ({ path: e.path, sha: e.sha, size: e.size })),
+    // Explicit folders (also empty ones): directories holding a placeholder file.
+    folders: blobs
+      .filter((e) => e.path.endsWith(`/${KEEP_FILE}`) && !hiddenPath(e.path.slice(0, -KEEP_FILE.length - 1)))
+      .map((e) => ({ path: e.path.slice(0, -KEEP_FILE.length - 1), sha: e.sha })),
+  };
 }
 
 async function readNote(env, path) {
@@ -325,6 +346,19 @@ export function checkPath(path) {
   const segments = p.split("/");
   if (segments.some((s) => !s || s === "." || s === ".." || s.startsWith(".") || s !== s.trim())) {
     throw new HttpError(400, "bad path");
+  }
+  return segments.join("/");
+}
+
+export function checkFolder(path) {
+  if (typeof path !== "string") throw new HttpError(400, "path required");
+  const p = path.trim().replace(/^\/+|\/+$/g, "");
+  if (!p || p.length > 180) throw new HttpError(400, "bad folder");
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\\:*?"<>|]/.test(p)) throw new HttpError(400, "bad characters in folder");
+  const segments = p.split("/");
+  if (segments.some((s) => !s || s === "." || s === ".." || s.startsWith(".") || s !== s.trim())) {
+    throw new HttpError(400, "bad folder");
   }
   return segments.join("/");
 }
