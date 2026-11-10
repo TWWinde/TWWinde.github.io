@@ -46,26 +46,26 @@ GitHub → Settings → Developer settings → Personal access tokens → Fine-g
 
 ```bash
 cd notes-service
-npx wrangler@3 login
-npx wrangler@3 deploy
+npx wrangler@4 login
+npx wrangler@4 deploy
 ```
 
 输出里会有地址,形如 `https://twwinde-notebook.<你的子域>.workers.dev`。然后写入四个密钥(每条命令会提示粘贴值):
 
 ```bash
-npx wrangler@3 secret put GITHUB_CLIENT_ID
+npx wrangler@4 secret put GITHUB_CLIENT_ID
 ```
 
 ```bash
-npx wrangler@3 secret put GITHUB_CLIENT_SECRET
+npx wrangler@4 secret put GITHUB_CLIENT_SECRET
 ```
 
 ```bash
-npx wrangler@3 secret put GITHUB_TOKEN
+npx wrangler@4 secret put GITHUB_TOKEN
 ```
 
 ```bash
-openssl rand -base64 48 | npx wrangler@3 secret put SESSION_SECRET
+openssl rand -base64 48 | npx wrangler@4 secret put SESSION_SECRET
 ```
 
 回到第 2 步的 OAuth App,把 callback URL 改成 `https://twwinde-notebook.<你的子域>.workers.dev/auth/callback`。

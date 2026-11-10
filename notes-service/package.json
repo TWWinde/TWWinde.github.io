@@ -5,6 +5,6 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "dev": "node test/dev-server.mjs",
-    "deploy": "npx wrangler@3 deploy"
+    "deploy": "npx wrangler@4 deploy"
   }
 }
