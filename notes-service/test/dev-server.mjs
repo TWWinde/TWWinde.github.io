@@ -70,7 +70,6 @@ http
 
 // Mint a session the same way the OAuth callback would.
 const start = await worker.fetch(new Request("http://localhost:8787/auth/login?return=http://localhost:4000/notes/"), env);
-const cookie = start.headers.get("Set-Cookie").split(";")[0];
 const state = new URL(start.headers.get("Location")).searchParams.get("state");
-const cb = await worker.fetch(new Request(`http://localhost:8787/auth/callback?code=good&state=${state}`, { headers: { Cookie: cookie } }), env);
+const cb = await worker.fetch(new Request(`http://localhost:8787/auth/callback?code=good&state=${state}`), env);
 console.log("Open:", cb.headers.get("Location"));

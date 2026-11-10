@@ -16,6 +16,7 @@
 
 const GH_API = "https://api.github.com";
 const MAX_NOTE_BYTES = 1_000_000;
+const STATE_TTL_SECONDS = 30 * 60;
 
 export default {
   async fetch(request, env) {
@@ -28,7 +29,7 @@ export default {
     }
 
     try {
-      if (url.pathname === "/auth/login") return login(url, env);
+      if (url.pathname === "/auth/login") return await login(url, env);
       if (url.pathname === "/auth/callback") return await callback(request, url, env);
 
       if (url.pathname.startsWith("/api/")) {
@@ -52,32 +53,36 @@ export default {
 
 /* ------------------------------------------------------------------ auth */
 
-function login(url, env) {
-  const state = randomHex(16);
+async function login(url, env) {
   const ret = safeReturnUrl(url.searchParams.get("return"), env);
+  // Signed, self-contained state (no cookie): survives slow logins and browsers that
+  // drop cookies on the GitHub redirect. Login CSRF is harmless here because only
+  // ALLOWED_LOGIN can ever obtain a session.
+  const state = await signSession(
+    { t: "state", n: randomHex(8), r: ret, exp: Math.floor(Date.now() / 1000) + STATE_TTL_SECONDS },
+    env.SESSION_SECRET,
+  );
   const authorize = new URL("https://github.com/login/oauth/authorize");
   authorize.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
   authorize.searchParams.set("redirect_uri", `${url.origin}/auth/callback`);
   authorize.searchParams.set("state", state);
   authorize.searchParams.set("allow_signup", "false");
   // No scope: public profile is enough to learn the login name.
-  const cookie = `nb_state=${state}.${b64urlEncodeString(ret)}; HttpOnly; Secure; SameSite=Lax; Path=/auth; Max-Age=600`;
-  return new Response(null, {
-    status: 302,
-    headers: { Location: authorize.toString(), "Set-Cookie": cookie },
-  });
+  return new Response(null, { status: 302, headers: { Location: authorize.toString(), "Cache-Control": "no-store" } });
 }
 
 async function callback(request, url, env) {
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  const cookie = parseCookies(request.headers.get("Cookie"))["nb_state"] || "";
-  const [cookieState, retEncoded] = cookie.split(".");
+  // Clears the state cookie set by older versions of this Worker.
   const clearCookie = "nb_state=; HttpOnly; Secure; SameSite=Lax; Path=/auth; Max-Age=0";
-  if (!code || !state || !cookieState || !timingSafeEqual(state, cookieState)) {
-    return text("Login failed: invalid state. Please try again.", 400, { "Set-Cookie": clearCookie });
+  const st = code && state ? await verifySigned(state, env.SESSION_SECRET) : null;
+  if (!st || st.t !== "state" || !st.exp || st.exp < Date.now() / 1000) {
+    return text("Login failed: the login link expired or is invalid. Go back to the notebook and sign in again.", 400, {
+      "Set-Cookie": clearCookie,
+    });
   }
-  const ret = safeReturnUrl(retEncoded ? b64urlDecodeString(retEncoded) : null, env);
+  const ret = safeReturnUrl(st.r, env);
 
   const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
@@ -103,7 +108,7 @@ async function callback(request, url, env) {
   });
   const user = await userRes.json().catch(() => ({}));
   // The OAuth token was only needed for identity; revoke it right away (best effort).
-  revokeOAuthToken(env, tokenJson.access_token).catch(() => {});
+  await revokeOAuthToken(env, tokenJson.access_token).catch(() => {});
 
   if (!user.login || user.login.toLowerCase() !== String(env.ALLOWED_LOGIN).toLowerCase()) {
     return text("This notebook is private.", 403, { "Set-Cookie": clearCookie });
@@ -144,20 +149,25 @@ function safeReturnUrl(candidate, env) {
   }
 }
 
-async function readSession(request, env) {
-  const header = request.headers.get("Authorization") || "";
-  const m = header.match(/^Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/);
+async function verifySigned(token, secret) {
+  const m = String(token).match(/^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)$/);
   if (!m) return null;
-  const [payloadPart, sigPart] = m[1].split(".");
-  const key = await hmacKey(env.SESSION_SECRET);
-  const ok = await crypto.subtle.verify("HMAC", key, b64urlDecodeBytes(sigPart), new TextEncoder().encode(payloadPart));
+  const key = await hmacKey(secret);
+  const ok = await crypto.subtle.verify("HMAC", key, b64urlDecodeBytes(m[2]), new TextEncoder().encode(m[1]));
   if (!ok) return null;
-  let payload;
   try {
-    payload = JSON.parse(b64urlDecodeString(payloadPart));
+    return JSON.parse(b64urlDecodeString(m[1]));
   } catch {
     return null;
   }
+}
+
+async function readSession(request, env) {
+  const header = request.headers.get("Authorization") || "";
+  const m = header.match(/^Bearer\s+(\S+)$/);
+  if (!m) return null;
+  const payload = await verifySigned(m[1], env.SESSION_SECRET);
+  if (!payload || payload.t) return null; // reject state tokens
   if (!payload.exp || payload.exp < Date.now() / 1000) return null;
   if (String(payload.v) !== String(env.SESSION_VERSION || "1")) return null;
   if (String(payload.sub).toLowerCase() !== String(env.ALLOWED_LOGIN).toLowerCase()) return null;
@@ -375,22 +385,6 @@ function json(data, status = 200, extra) {
 
 function text(body, status, extra) {
   return new Response(body, { status, headers: { "Content-Type": "text/plain; charset=utf-8", ...(extra || {}) } });
-}
-
-function parseCookies(header) {
-  const out = {};
-  for (const part of (header || "").split(";")) {
-    const i = part.indexOf("=");
-    if (i > 0) out[part.slice(0, i).trim()] = part.slice(i + 1).trim();
-  }
-  return out;
-}
-
-function timingSafeEqual(a, b) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
 }
 
 function randomHex(bytes) {

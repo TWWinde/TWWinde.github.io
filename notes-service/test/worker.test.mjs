@@ -13,9 +13,8 @@ async function loginAs(code) {
   const loc = new URL(start.headers.get("Location"));
   assert.equal(loc.origin + loc.pathname, "https://github.com/login/oauth/authorize");
   assert.equal(loc.searchParams.get("scope"), null);
-  const cookie = start.headers.get("Set-Cookie").split(";")[0];
   const state = loc.searchParams.get("state");
-  return call(`/auth/callback?code=${code}&state=${state}`, { headers: { Cookie: cookie } });
+  return call(`/auth/callback?code=${code}&state=${state}`);
 }
 
 let token;
@@ -34,9 +33,24 @@ test("path validation", () => {
   }
 });
 
-test("callback rejects bad state", async () => {
-  const res = await call("/auth/callback?code=good&state=abc", { headers: { Cookie: "nb_state=def.x" } });
-  assert.equal(res.status, 400);
+test("callback rejects bad, tampered or expired state", async () => {
+  assert.equal((await call("/auth/callback?code=good&state=abc")).status, 400);
+  const start = await call("/auth/login");
+  const state = new URL(start.headers.get("Location")).searchParams.get("state");
+  assert.equal((await call(`/auth/callback?code=good&state=${state.slice(0, -2)}AA`)).status, 400);
+  const realNow = Date.now;
+  Date.now = () => realNow() + 31 * 60 * 1000;
+  try {
+    assert.equal((await call(`/auth/callback?code=good&state=${state}`)).status, 400);
+  } finally {
+    Date.now = realNow;
+  }
+});
+
+test("a state token cannot be used as a session", async () => {
+  const start = await call("/auth/login");
+  const state = new URL(start.headers.get("Location")).searchParams.get("state");
+  assert.equal((await call("/api/me", { headers: { Authorization: "Bearer " + state } })).status, 401);
 });
 
 test("other GitHub users are refused", async () => {
@@ -54,9 +68,8 @@ test("owner login returns a session to the allowed return URL", async () => {
 
 test("foreign return URL falls back to FRONTEND_URL", async () => {
   const start = await call("/auth/login?return=" + encodeURIComponent("https://evil.example/steal"));
-  const cookie = start.headers.get("Set-Cookie").split(";")[0];
   const state = new URL(start.headers.get("Location")).searchParams.get("state");
-  const res = await call(`/auth/callback?code=good&state=${state}`, { headers: { Cookie: cookie } });
+  const res = await call(`/auth/callback?code=good&state=${state}`);
   assert.match(res.headers.get("Location"), /^https:\/\/twwinde\.github\.io\/notes\/#nb_token=/);
 });
 
