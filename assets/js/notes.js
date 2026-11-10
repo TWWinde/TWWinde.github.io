@@ -413,22 +413,36 @@
     takeTokenFromHash();
     setView(store.get(VIEW_KEY) || (mobile() ? "edit" : "split"));
     if (!store.get(TOKEN_KEY)) return signedOut();
+    let me;
     try {
-      const me = await api("GET", "/api/me");
-      el.user.textContent = me.login;
-      el.signin.hidden = true;
-      el.app.hidden = false;
-      await loadTree();
-      const last = store.get(LAST_KEY);
-      if (last && state.files.some((f) => f.path === last)) await openNote(last);
-      else if (mobile()) root.classList.add("nb--side-open");
+      me = await api("GET", "/api/me");
     } catch (e) {
       if (e.status !== 401) {
         el.signin.hidden = false;
         el.signinError.hidden = false;
         el.signinError.textContent = e.status === 0 ? "Cannot reach the notes service." : "Error: " + e.message;
       }
+      return;
     }
+    // Signed in: from here on, problems are shown inside the notebook, not on the sign-in card.
+    el.user.textContent = me.login;
+    el.signin.hidden = true;
+    el.app.hidden = false;
+    try {
+      await loadTree();
+    } catch (e) {
+      if (e.status === 401) return;
+      setStatus(e.status === 0 ? "Offline" : "Could not load notes: " + e.message, "error");
+      el.tree.textContent = "";
+      const p = document.createElement("p");
+      p.className = "nb-tree__empty";
+      p.textContent = "Could not load notes. Reload the page to retry.";
+      el.tree.append(p);
+      return;
+    }
+    const last = store.get(LAST_KEY);
+    if (last && state.files.some((f) => f.path === last)) await openNote(last);
+    else if (mobile()) root.classList.add("nb--side-open");
   }
   boot();
 })();
