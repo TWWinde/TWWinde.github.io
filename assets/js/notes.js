@@ -94,22 +94,32 @@
   });
 
   /* ----------------------------------------------------------------- tree */
+  const COLLAPSED_KEY = "nb_collapsed";
+  const collapsed = new Set((() => { try { return JSON.parse(store.get(COLLAPSED_KEY)) || []; } catch { return []; } })());
+  const saveCollapsed = () => store.set(COLLAPSED_KEY, JSON.stringify([...collapsed]));
+  const dirOf = (path) => (path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
+  const baseOf = (path) => path.slice(path.lastIndexOf("/") + 1);
+  let dragPath = null;
+
+  function buildTree(files) {
+    const root = { path: "", dirs: new Map(), files: [] };
+    for (const f of files) {
+      const parts = f.path.split("/");
+      let node = root;
+      for (const name of parts.slice(0, -1)) {
+        if (!node.dirs.has(name)) node.dirs.set(name, { name, path: node.path ? node.path + "/" + name : name, dirs: new Map(), files: [] });
+        node = node.dirs.get(name);
+      }
+      node.files.push(f);
+    }
+    return root;
+  }
+
   function renderTree() {
     const q = el.search.value.trim().toLowerCase();
-    const files = state.files
-      .filter((f) => !q || f.path.toLowerCase().includes(q))
-      .sort((a, b) => {
-        const da = a.path.includes("/"), db = b.path.includes("/");
-        return da === db ? a.path.localeCompare(b.path) : da ? 1 : -1; // root notes first
-      });
-    const groups = new Map();
-    for (const f of files) {
-      const i = f.path.lastIndexOf("/");
-      const dir = i < 0 ? "" : f.path.slice(0, i);
-      if (!groups.has(dir)) groups.set(dir, []);
-      groups.get(dir).push(f);
-    }
+    const files = state.files.filter((f) => !q || f.path.toLowerCase().includes(q));
     el.tree.textContent = "";
+    el.tree.dataset.dropDir = "";
     if (!files.length) {
       const p = document.createElement("p");
       p.className = "nb-tree__empty";
@@ -117,31 +127,121 @@
       el.tree.append(p);
       return;
     }
-    for (const [dir, list] of groups) {
-      const wrap = document.createElement(dir ? "details" : "div");
-      if (dir) {
-        wrap.open = true;
-        const s = document.createElement("summary");
-        s.textContent = dir;
-        wrap.append(s);
-      }
-      const ul = document.createElement("ul");
-      for (const f of list) {
-        const li = document.createElement("li");
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = f.path.slice(dir ? dir.length + 1 : 0).replace(/\.md$/i, "");
-        b.title = f.path;
-        if (state.current && state.current.path === f.path) b.setAttribute("aria-current", "true");
-        if (readDraft(f.path)) b.classList.add("has-draft");
-        b.addEventListener("click", () => openNote(f.path));
-        li.append(b);
-        ul.append(li);
-      }
-      wrap.append(ul);
-      el.tree.append(wrap);
-    }
+    el.tree.append(renderNode(buildTree(files), 0, !!q));
   }
+
+  function renderNode(node, depth, expandAll) {
+    const ul = document.createElement("ul");
+    const byName = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+    for (const dir of [...node.dirs.values()].sort((a, b) => byName(a.name, b.name))) {
+      const open = expandAll || !collapsed.has(dir.path);
+      const li = document.createElement("li");
+      const row = document.createElement("div");
+      row.className = "nb-folder";
+      row.dataset.dropDir = dir.path;
+      row.style.setProperty("--depth", depth);
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "nb-folder__toggle";
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.title = dir.path;
+      const caret = document.createElement("span");
+      caret.className = "nb-caret";
+      caret.setAttribute("aria-hidden", "true");
+      toggle.append(caret, document.createTextNode(dir.name));
+      toggle.addEventListener("click", () => {
+        if (collapsed.has(dir.path)) collapsed.delete(dir.path); else collapsed.add(dir.path);
+        saveCollapsed();
+        renderTree();
+      });
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "nb-folder__add";
+      add.title = "New note in " + dir.path;
+      add.setAttribute("aria-label", add.title);
+      add.textContent = "+";
+      add.addEventListener("click", () => createNote(dir.path + "/"));
+      row.append(toggle, add);
+      li.append(row);
+      if (open) li.append(renderNode(dir, depth + 1, expandAll));
+      ul.append(li);
+    }
+    for (const f of [...node.files].sort((a, b) => byName(a.path, b.path))) {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "nb-note";
+      b.textContent = baseOf(f.path).replace(/\.md$/i, "");
+      b.title = f.path;
+      b.style.setProperty("--depth", depth);
+      b.dataset.dropDir = node.path;
+      b.draggable = true;
+      if (state.current && state.current.path === f.path) b.setAttribute("aria-current", "true");
+      if (readDraft(f.path)) b.classList.add("has-draft");
+      b.addEventListener("click", () => openNote(f.path));
+      b.addEventListener("dragstart", (e) => {
+        dragPath = f.path;
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", f.path);
+        b.classList.add("is-dragging");
+        el.tree.classList.add("is-dragging");
+      });
+      b.addEventListener("dragend", () => {
+        dragPath = null;
+        b.classList.remove("is-dragging");
+        el.tree.classList.remove("is-dragging");
+        clearDropHighlight();
+      });
+      li.append(b);
+      ul.append(li);
+    }
+    return ul;
+  }
+
+  /* drag & drop: drop a note on a folder (or a note inside it) to move it there; on empty space for top level */
+  let hoverTimer = null, hoverDir = null;
+  function dropDirFor(target) {
+    const hit = target.closest && target.closest("[data-drop-dir]");
+    return hit && el.tree.contains(hit) ? hit.dataset.dropDir : null;
+  }
+  function clearDropHighlight() {
+    clearTimeout(hoverTimer);
+    hoverDir = null;
+    for (const n of el.tree.querySelectorAll(".is-drop")) n.classList.remove("is-drop");
+    el.tree.classList.remove("is-drop");
+  }
+  function highlightDrop(dir) {
+    if (dir === hoverDir) return;
+    clearDropHighlight();
+    hoverDir = dir;
+    if (dir === "") { el.tree.classList.add("is-drop"); return; }
+    const row = [...el.tree.querySelectorAll(".nb-folder")].find((r) => r.dataset.dropDir === dir);
+    if (row) row.classList.add("is-drop");
+    // Hovering over a collapsed folder opens it so you can drop deeper.
+    if (collapsed.has(dir)) hoverTimer = setTimeout(() => { collapsed.delete(dir); saveCollapsed(); renderTree(); hoverDir = null; }, 700);
+  }
+  el.tree.addEventListener("dragover", (e) => {
+    if (!dragPath) return;
+    const dir = dropDirFor(e.target);
+    if (dir == null) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = dir === dirOf(dragPath) ? "none" : "move";
+    highlightDrop(dir);
+  });
+  el.tree.addEventListener("dragleave", (e) => {
+    if (!el.tree.contains(e.relatedTarget)) clearDropHighlight();
+  });
+  el.tree.addEventListener("drop", (e) => {
+    if (!dragPath) return;
+    e.preventDefault();
+    const from = dragPath;
+    const dir = dropDirFor(e.target);
+    clearDropHighlight();
+    el.tree.classList.remove("is-dragging");
+    dragPath = null;
+    if (dir == null || dir === dirOf(from)) return;
+    moveNote(from, (dir ? dir + "/" : "") + baseOf(from));
+  });
 
   async function loadTree() {
     const data = await api("GET", "/api/tree");
@@ -324,17 +424,20 @@
     return p;
   }
 
-  el.newBtn.addEventListener("click", async () => {
-    const name = prompt("New note name (use folder/name for folders):", localStamp().slice(0, 10) + " ");
-    if (name == null) return;
+  async function createNote(prefix) {
+    const suggestion = prefix || localStamp().slice(0, 10) + " ";
+    const name = prompt("New note name (use folder/name for folders):", suggestion);
+    if (name == null || /\/\s*$/.test(name)) return;
     const path = normalizePath(name);
     if (!path) return;
     if (state.files.some((f) => f.path === path)) return openNote(path);
     if (state.dirty) await saveNow();
-    const title = path.split("/").pop().replace(/\.md$/i, "");
+    const title = baseOf(path).replace(/\.md$/i, "");
     try {
       setStatus("Creating…", "busy");
       await api("PUT", "/api/file", { path, content: "# " + title + "\n\n" });
+      for (let d = dirOf(path); d; d = dirOf(d)) collapsed.delete(d);
+      saveCollapsed();
       await loadTree();
       state.current = null;
       await openNote(path);
@@ -343,29 +446,45 @@
     } catch (e) {
       setStatus("Create failed: " + e.message, "error");
     }
-  });
+  }
+  el.newBtn.addEventListener("click", () => createNote());
+
+  /* Move or rename a note (also used by drag & drop). Returns true on success. */
+  async function moveNote(from, to) {
+    if (!to || to === from) return false;
+    if (state.files.some((f) => f.path === to)) { alert('"' + to + '" already exists.'); return false; }
+    const isCurrent = !!state.current && state.current.path === from;
+    if (isCurrent && state.dirty) await saveNow();
+    if (isCurrent && state.dirty) { setStatus("Save first, then move", "error"); return false; }
+    const entry = state.files.find((f) => f.path === from);
+    const sha = isCurrent ? state.current.sha : entry && entry.sha;
+    try {
+      setStatus("Moving…", "busy");
+      const res = await api("POST", "/api/rename", { from, to, sha });
+      const draft = store.get(DRAFT_PREFIX + from);
+      if (draft && !isCurrent) store.set(DRAFT_PREFIX + to, draft);
+      clearDraft(from);
+      if (isCurrent) {
+        state.current = { path: res.path, sha: res.sha, saved: state.current.saved };
+        el.path.value = res.path;
+      }
+      if (store.get(LAST_KEY) === from) store.set(LAST_KEY, res.path);
+      for (let d = dirOf(res.path); d; d = dirOf(d)) collapsed.delete(d);
+      saveCollapsed();
+      await loadTree();
+      setStatus(dirOf(from) === dirOf(res.path) ? "Renamed" : "Moved to " + (dirOf(res.path) || "top level"), "ok");
+      return true;
+    } catch (e) {
+      setStatus("Move failed: " + (e.status === 409 ? "note changed elsewhere, reload" : e.message), "error");
+      return false;
+    }
+  }
 
   async function renameCurrent() {
     const note = state.current;
     if (!note) return;
-    const to = normalizePath(el.path.value);
-    if (!to || to === note.path) { el.path.value = note.path; return; }
-    if (state.files.some((f) => f.path === to)) { alert("A note with that name already exists."); el.path.value = note.path; return; }
-    if (state.dirty) await saveNow();
-    if (state.dirty) { el.path.value = note.path; return; }
-    try {
-      setStatus("Renaming…", "busy");
-      const res = await api("POST", "/api/rename", { from: note.path, to, sha: note.sha });
-      clearDraft(note.path);
-      state.current = { path: res.path, sha: res.sha, saved: note.saved };
-      el.path.value = res.path;
-      store.set(LAST_KEY, res.path);
-      await loadTree();
-      setStatus("Renamed", "ok");
-    } catch (e) {
-      el.path.value = note.path;
-      setStatus("Rename failed: " + e.message, "error");
-    }
+    const ok = await moveNote(note.path, normalizePath(el.path.value));
+    if (!ok && state.current) el.path.value = state.current.path;
   }
   el.path.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); el.path.blur(); }

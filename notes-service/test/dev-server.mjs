@@ -17,6 +17,8 @@ gh.files.set("research/structured-pruning.md", {
   content: utf8ToB64("# Structured pruning\n\n- remove whole heads\n- **physically** shrink tensors\n\n```python\nprint('hi')\n```\n\n| a | b |\n|---|---|\n| 1 | 2 |\n"),
   sha: "b".repeat(40),
 });
+gh.files.set("research/pruning/heads/attention-heads.md", { content: utf8ToB64("# Heads\n"), sha: "d".repeat(40) });
+gh.files.set("research/pruning/channels.md", { content: utf8ToB64("# Channels\n"), sha: "e".repeat(40) });
 gh.files.set("daily/2026-11-10 周一.md", { content: utf8ToB64("# 2026-11-10\n\n今天的笔记。"), sha: "c".repeat(40) });
 
 const env = { ...testEnv, ALLOWED_ORIGINS: "http://localhost:4000,http://127.0.0.1:4000" };
