@@ -96,7 +96,9 @@ async function callback(request, url, env) {
   });
   const tokenJson = await tokenRes.json().catch(() => ({}));
   if (!tokenJson.access_token) {
-    return text("Login failed: GitHub did not return a token.", 400, { "Set-Cookie": clearCookie });
+    // GitHub's error code (e.g. incorrect_client_credentials) is not secret and makes setup issues obvious.
+    const reason = String(tokenJson.error || `HTTP ${tokenRes.status}`).replace(/[^a-z0-9_ ]/gi, "").slice(0, 60);
+    return text(`Login failed: GitHub did not return a token (${reason}).`, 400, { "Set-Cookie": clearCookie });
   }
 
   const userRes = await fetch(`${GH_API}/user`, {
