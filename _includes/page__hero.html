@@ -72,16 +72,43 @@
   {% endif %}
   <script>
     (function () {
-      var slides = document.querySelectorAll('.hero-slide');
-      if (slides.length > 1) {
-        var current = 0;
-        setInterval(function () {
+      var slider = document.getElementById('heroSlider');
+      if (!slider) return;
+      var hero = slider.parentElement;
+      var slides = slider.querySelectorAll('.hero-slide');
+      var current = 0;
+      var timer = null;
+
+      function pause() {
+        hero.classList.add('hero-is-hovered');
+        window.clearInterval(timer);
+        timer = null;
+      }
+
+      function resume() {
+        hero.classList.remove('hero-is-hovered');
+        if (timer !== null || slides.length < 2) return;
+        timer = window.setInterval(function () {
           slides[current].style.opacity = '0';
           slides[current].classList.remove('active');
           current = (current + 1) % slides.length;
           slides[current].style.opacity = '1';
           slides[current].classList.add('active');
         }, 5000);
+      }
+
+      hero.addEventListener('pointerenter', function (event) {
+        if (event.pointerType !== 'touch') pause();
+      });
+      hero.addEventListener('pointerleave', function (event) {
+        if (event.pointerType !== 'touch') resume();
+      });
+      hero.addEventListener('pointercancel', resume);
+
+      if (window.matchMedia('(hover: hover)').matches && hero.matches(':hover')) {
+        pause();
+      } else {
+        resume();
       }
     })();
   </script>

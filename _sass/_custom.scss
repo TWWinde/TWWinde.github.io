@@ -172,6 +172,18 @@ a {
 
 .page__hero--home .page__lead {
   margin-top: 0;
+  transition: opacity 180ms ease;
+}
+
+/* Keep the banner's layout stable while the pointer reveals the image. */
+.page__hero--home.hero-is-hovered .page__lead--home {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Finish any in-progress crossfade so the hovered image stays still. */
+.hero-is-hovered .hero-slide {
+  transition: none !important;
 }
 
 .sidebar {
