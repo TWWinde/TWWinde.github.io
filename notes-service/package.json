@@ -1,0 +1,10 @@
+{
+  "name": "twwinde-notebook",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "node test/dev-server.mjs",
+    "deploy": "npx wrangler@3 deploy"
+  }
+}

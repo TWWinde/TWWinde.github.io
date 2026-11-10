@@ -1,0 +1,66 @@
+---
+permalink: /notes/
+title: "Notebook"
+layout: default
+sitemap: false
+# URL of the deployed notes-service Worker (see notes-service/README.md).
+notes_api: "https://twwinde-notebook.REPLACE-ME.workers.dev"
+---
+{% include base_path %}
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ base_path }}/assets/css/notes.css">
+
+<div id="notebook" class="nb" data-api="{{ page.notes_api }}">
+  <section class="nb-signin" id="nb-signin" hidden>
+    <div class="nb-signin__card">
+      <h1>Notebook</h1>
+      <p>Private notes, stored in my own GitHub repository.</p>
+      <button type="button" class="nb-btn nb-btn--primary" id="nb-login">Sign in with GitHub</button>
+      <p class="nb-signin__error" id="nb-signin-error" hidden></p>
+    </div>
+  </section>
+
+  <section class="nb-app" id="nb-app" hidden>
+    <aside class="nb-side" id="nb-side">
+      <div class="nb-side__top">
+        <input type="search" id="nb-search" class="nb-input" placeholder="Search notes" aria-label="Search notes">
+        <button type="button" class="nb-btn nb-btn--primary" id="nb-new" title="New note">New</button>
+      </div>
+      <nav class="nb-tree" id="nb-tree" aria-label="Notes"></nav>
+      <div class="nb-side__foot">
+        <span id="nb-user"></span>
+        <button type="button" class="nb-link" id="nb-logout">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="nb-main">
+      <header class="nb-bar">
+        <button type="button" class="nb-btn nb-btn--icon" id="nb-toggle-side" aria-label="Show note list">&#9776;</button>
+        <input type="text" id="nb-path" class="nb-input nb-path" aria-label="Note path" spellcheck="false" disabled>
+        <span class="nb-status" id="nb-status" aria-live="polite"></span>
+        <div class="nb-views" role="group" aria-label="View">
+          <button type="button" data-view="edit">Edit</button>
+          <button type="button" data-view="split">Split</button>
+          <button type="button" data-view="preview">Preview</button>
+        </div>
+        <button type="button" class="nb-btn" id="nb-save" title="Save (Ctrl/Cmd+S)" disabled>Save</button>
+        <button type="button" class="nb-btn nb-btn--danger" id="nb-delete" title="Delete note" disabled>Delete</button>
+      </header>
+
+      <div class="nb-conflict" id="nb-conflict" hidden>
+        <span>This note was changed on another device.</span>
+        <button type="button" class="nb-btn" id="nb-conflict-load">Load theirs (keep mine as a copy)</button>
+        <button type="button" class="nb-btn nb-btn--danger" id="nb-conflict-overwrite">Overwrite with mine</button>
+      </div>
+
+      <div class="nb-panes" id="nb-panes" data-view="split">
+        <textarea id="nb-editor" class="nb-editor" spellcheck="false" placeholder="Select or create a note" disabled></textarea>
+        <article id="nb-preview" class="nb-preview"></article>
+      </div>
+    </main>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="{{ base_path }}/assets/js/notes.js"></script>

@@ -187,6 +187,7 @@ exclude:
   - local
   - log
   - node_modules
+  - notes-service
   - package.json*
   - Rakefile
   - README
