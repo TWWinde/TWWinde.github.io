@@ -78,7 +78,7 @@ Things I measured on the phone that did **not** buy a real speed-up:
 Training-free **KV downsampling** (ToDo-style average pooling of image keys/values, text keys untouched) *is* fast on the ANE — 67 ms per block at 2 × 2, 48 ms at 4 × 4 — but on a 4-step distilled model it destroys quality. Even with a log(p²) correction for the pooled keys, all-layer pooling turns images foggy and loses text; pooling only the first 12 blocks keeps composition but still loses detail and saves only ~6 s.
 
 ![KV downsampling quality](/images/blog/mobilediffuser/kv-pooling-quality.jpg)
-*Columns: exact attention, 2×2 all blocks, 4×4 all blocks, 2×2 first 12 blocks, 2×2 last 12 blocks. LPIPS vs exact: 0.82 / 0.95 / 0.60 / 0.66.*
+*Columns: exact attention · 2×2 all blocks · 4×4 all blocks · 2×2 first 12 blocks · 2×2 last 12 blocks · then the same with the log(p²) correction: 2×2 all, 4×4 all, 2×2 first 12. LPIPS vs exact: 0.82 / 0.95 / 0.60 / 0.66 / 0.86 / 1.02 / 0.62.*
 
 My takeaway: few-step students leave no later steps to correct attention errors, so cheaper attention has to be **trained in** (e.g. pooled or windowed attention in early blocks during distillation), not bolted on afterwards.
 
