@@ -52,6 +52,7 @@ redirect_from:
     <span class="home-section__eyebrow">Notes &amp; ideas</span>
   </div>
   <div class="blog-grid">
+    <a class="blog-card" href="/posts/2026/11/mobilediffuser/"><span class="blog-card__meta">Project</span><span class="blog-card__title">MobileDiffuser: Stable Diffusion 3 Medium at 1024px on the iPhone Neural Engine</span></a>
     <a class="blog-card" href="/posts/2025/08/blog-post-1/"><span class="blog-card__meta">Learning notes</span><span class="blog-card__title">Flow Matching and Diffusion Models</span></a>
     <a class="blog-card" href="https://twwinde.github.io/reseed-project-page/"><span class="blog-card__meta">Project</span><span class="blog-card__title">ReSeed: A First-Step Bias Restores Lost Diversity in Diffusion Model Distillation</span></a>
     <a class="blog-card" href="/posts/2014/08/blog-post-3/"><span class="blog-card__meta">Blog</span><span class="blog-card__title">Blog Post number 3</span></a>
