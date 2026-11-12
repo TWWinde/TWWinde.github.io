@@ -457,6 +457,50 @@ a {
   transform: translateX(0);
 }
 
+/* Languages: name left, proficiency right, hairline separators. */
+.lang-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lang-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.lang-list li:last-child {
+  border-bottom: 0;
+}
+
+.lang-name {
+  font-weight: 600;
+}
+
+.lang-level {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  text-align: right;
+}
+
+.lang-cefr {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .home-section--quiet {
   margin-top: 4rem;
   padding-top: 2rem;

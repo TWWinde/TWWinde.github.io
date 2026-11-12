@@ -59,6 +59,18 @@ redirect_from:
   </div>
 </section>
 
+<section id="languages" class="home-section">
+  <div class="home-section__header">
+    <h2>Languages</h2>
+    <span class="home-section__eyebrow">Spoken &amp; written</span>
+  </div>
+  <ul class="lang-list">
+    <li><span class="lang-name">Chinese</span><span class="lang-level">Native proficiency</span></li>
+    <li><span class="lang-name">German</span><span class="lang-level"><span class="lang-cefr">C1</span>Verhandlungssicher</span></li>
+    <li><span class="lang-name">English</span><span class="lang-level"><span class="lang-cefr">C1</span>Full professional proficiency</span></li>
+  </ul>
+</section>
+
 <section id="visitor-map" class="home-section home-section--quiet">
 <div class="visitor-card">
   <span class="visitor-card__label">Visitors around the world</span>
