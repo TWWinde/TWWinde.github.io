@@ -22,7 +22,7 @@ tags:
 | SD3-M 4-step | 512 | 0.7 s | 8.2 s | 0.4 s | ~9.4 s | ~58 MB |
 | SD3-M 4-step | 1024 | 0.7 s | 25.2 s | 5.4 s (3×3 tiles) | ~31 s | ~146 MB |
 
-Everything is open: code on [GitHub](https://github.com/TWWinde/MobileDiffuser/tree/MCL), compiled Core ML resources and checkpoints on [Hugging Face](https://huggingface.co/Wenwu2000/MobileDiffuser-SD3-medium), and the app downloads them in-app. There is also a short [demo video](https://www.youtube.com/shorts/m5wlOkeY5Bw).
+Everything is open: there is a [project page](https://twwinde.github.io/mobilediffuser-project-page/), code on [GitHub](https://github.com/TWWinde/MobileDiffuser/tree/MCL), compiled Core ML resources and checkpoints on [Hugging Face](https://huggingface.co/Wenwu2000/MobileDiffuser-SD3-medium), and the app downloads them in-app. There is also a short [demo video](https://www.youtube.com/shorts/m5wlOkeY5Bw).
 
 ---
 
@@ -106,6 +106,7 @@ On the iPhone the 512 ReSeed model runs at **9.4 s** warm — the same as the or
 
 ## Links
 
+- Project page: [twwinde.github.io/mobilediffuser-project-page](https://twwinde.github.io/mobilediffuser-project-page/)
 - Code (Core ML / ANE app, converters, probe tools): [github.com/TWWinde/MobileDiffuser (MCL branch)](https://github.com/TWWinde/MobileDiffuser/tree/MCL) — details in `docs/ANE_1024.md` and `docs/RESEED.md`
 - Core ML resources and checkpoints: [huggingface.co/Wenwu2000/MobileDiffuser-SD3-medium](https://huggingface.co/Wenwu2000/MobileDiffuser-SD3-medium)
 - ReSeed: [project page](https://twwinde.github.io/reseed-project-page/) · [code](https://github.com/TWWinde/ReSeed) · [weights](https://huggingface.co/Wenwu2000/ReSeed)
