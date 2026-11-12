@@ -66,7 +66,7 @@ redirect_from:
   </div>
   <ul class="lang-list">
     <li><span class="lang-name">Chinese</span><span class="lang-level">Native proficiency</span></li>
-    <li><span class="lang-name">German</span><span class="lang-level"><span class="lang-cefr">C1</span>Verhandlungssicher</span></li>
+    <li><span class="lang-name">German</span><span class="lang-detail"><span class="lang-level"><span class="lang-cefr">C1</span>Verhandlungssicher</span><span class="lang-cert">Goethe-Zertifikat C1 (gut) · DSH-3</span></span></li>
     <li><span class="lang-name">English</span><span class="lang-level"><span class="lang-cefr">C1</span>Full professional proficiency</span></li>
   </ul>
 </section>
