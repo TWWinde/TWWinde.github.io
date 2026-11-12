@@ -55,17 +55,12 @@ redirect_from:
     <a class="blog-card" href="https://twwinde.github.io/mobilediffuser-project-page/"><span class="blog-card__meta">Project</span><span class="blog-card__title">MobileDiffuser project page: Diffusion Models on the iPhone Neural Engine</span></a>
     <a class="blog-card" href="/posts/2025/08/blog-post-1/"><span class="blog-card__meta">Learning notes</span><span class="blog-card__title">Flow Matching and Diffusion Models</span></a>
     <a class="blog-card" href="https://twwinde.github.io/reseed-project-page/"><span class="blog-card__meta">Project</span><span class="blog-card__title">ReSeed: A First-Step Bias Restores Lost Diversity in Diffusion Model Distillation</span></a>
-    <a class="blog-card" href="/posts/2014/08/blog-post-3/"><span class="blog-card__meta">Blog</span><span class="blog-card__title">Blog Post number 3</span></a>
-    <a class="blog-card" href="/posts/2013/08/blog-post-2/"><span class="blog-card__meta">Blog</span><span class="blog-card__title">Blog Post number 2</span></a>
   </div>
 </section>
 
-<section id="visitor-map" class="home-section">
-  <div class="home-section__header">
-    <h2>Visitors</h2>
-    <span class="home-section__eyebrow">Around the world</span>
-  </div>
+<section id="visitor-map" class="home-section home-section--quiet">
 <div class="visitor-card">
+  <span class="visitor-card__label">Visitors around the world</span>
   <script type="text/javascript" id="mapmyvisitors" src="https://mapmyvisitors.com/map.js?cl=ffffff&w=a&t=n&d=SX29sULPnpyIEVjJl-Qu1xsJlgUOdgoc0ZECpMMrr6c"></script>
 </div>
 </section>
