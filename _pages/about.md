@@ -5,9 +5,9 @@ excerpt: "Welcome to my homepage! 👋"
 author_profile: true
 header:
   overlay_images: 
-    - hero-qingdao-panorama.png?v=20261110-soft-3900
-    - hero-stuttgart-panorama.png?v=20261110-soft-3900
-    - hero-graz-panorama.png?v=20261110-soft-3900
+    - hero-qingdao-panorama.webp?v=20261112-photo
+    - hero-stuttgart-panorama.webp?v=20261112-photo
+    - hero-graz-panorama.webp?v=20261112-photo
   overlay_filter: 0.2
 redirect_from: 
   - /about/
