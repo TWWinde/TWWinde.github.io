@@ -21,7 +21,7 @@ redirect_from:
     <span>Generative Models</span>
     <span>Efficient Machine Learning</span>
     <span>Model Compression</span>
-    <span>Embedded Intelligence</span>
+    <span>Edge AI</span>
   </div>
 </div>
 
