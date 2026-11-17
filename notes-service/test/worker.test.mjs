@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { installFakeGitHub, testEnv as env } from "./fake-github.mjs";
-import worker, { checkPath, checkFolder, utf8ToB64, b64ToUtf8 } from "../worker.js";
+import worker, { checkPath, checkFolder, checkImagePath, utf8ToB64, b64ToUtf8 } from "../worker.js";
 
 const gh = installFakeGitHub();
 const W = "https://nb.example.workers.dev";
@@ -159,4 +159,82 @@ test("empty folders: create, list, delete", async () => {
   res = await authed("/api/folder", { method: "DELETE", body: JSON.stringify({ path: "课程/机器学习", sha }) });
   assert.equal(res.status, 200);
   assert.ok(!gh.files.has("课程/机器学习/.keep"));
+});
+
+test("image path validation", () => {
+  assert.equal(checkImagePath("/research/images/a.png"), "research/images/a.png");
+  for (const ok of ["a.PNG", "b.jpg", "c.JPEG", "d.gif", "e.webp", "f.svg", "图/图片.png"]) {
+    assert.doesNotThrow(() => checkImagePath(ok), `${ok} should be accepted`);
+  }
+  for (const bad of ["x.md", "../a.png", "a/../b.png", ".hidden/a.png", "a/.png", "a.exe", "png", "a.constructor", "a//b.png", "a\\b.png", "a:b.png", " /x.png ".repeat(40), "", null]) {
+    assert.throws(() => checkImagePath(bad), `${bad} should be rejected`);
+  }
+});
+
+const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0xff, 0xfe, 0x80, 0xc3, 0x28, 0x00, 0x01]);
+const imageUrl = (path) => "/api/image?path=" + encodeURIComponent(path);
+const putImage = (path, body, type = "image/png") => authed(imageUrl(path), { method: "PUT", body, headers: { "Content-Type": type } });
+
+test("images: upload, read back byte-for-byte, no overwrite, not listed", async () => {
+  const path = "research/images/20261117-101500-ab12.png";
+  let res = await putImage(path, PNG);
+  assert.equal(res.status, 200);
+  const created = await res.json();
+  assert.equal(created.path, path);
+  assert.ok(created.sha);
+
+  res = await authed(imageUrl(path));
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("Content-Type"), "image/png");
+  assert.equal(res.headers.get("Cache-Control"), "private, max-age=3600");
+  assert.equal(res.headers.get("X-Content-Type-Options"), "nosniff");
+  assert.match(res.headers.get("Content-Security-Policy"), /sandbox/);
+  assert.equal(res.headers.get("Access-Control-Allow-Origin"), "http://localhost:4000");
+  assert.deepEqual(new Uint8Array(await res.arrayBuffer()), PNG);
+
+  res = await putImage(path, PNG);
+  assert.equal(res.status, 409, "uploading over an existing image is refused");
+  assert.equal((await res.json()).error, "image already exists");
+
+  const svg = new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"/>');
+  assert.equal((await putImage("logo.SVG", svg, "image/svg+xml")).status, 200);
+  res = await authed(imageUrl("logo.SVG"));
+  assert.equal(res.headers.get("Content-Type"), "image/svg+xml");
+
+  const tree = await (await authed("/api/tree")).json();
+  assert.deepEqual(tree.files, [], "images are not listed as notes");
+  assert.deepEqual(tree.folders, []);
+  gh.files.delete(path);
+  gh.files.delete("logo.SVG");
+});
+
+test("images: empty, too large, missing, unauthenticated", async () => {
+  let res = await putImage("a.png", new Uint8Array(0));
+  assert.equal(res.status, 400);
+
+  res = await putImage("big.png", new Uint8Array(5_000_001));
+  assert.equal(res.status, 413);
+  assert.equal((await res.json()).error, "image too large");
+  assert.ok(!gh.files.has("big.png"));
+  const before = gh.calls.length;
+  res = await authed(imageUrl("big.png"), { method: "PUT", body: PNG, headers: { "Content-Type": "image/png", "Content-Length": "9999999" } });
+  assert.equal(res.status, 413, "declared Content-Length over the limit is refused up front");
+  assert.equal(gh.calls.length, before);
+
+  res = await authed(imageUrl("nope/missing.png"));
+  assert.equal(res.status, 404);
+  assert.equal((await res.json()).error, "image not found");
+
+  assert.equal((await call(imageUrl("a.png"))).status, 401);
+  assert.equal((await call(imageUrl("a.png"), { method: "PUT", body: PNG })).status, 401);
+});
+
+test("bad image paths are rejected before touching GitHub", async () => {
+  const before = gh.calls.length;
+  for (const bad of ["../a.png", ".hidden/a.png", "x.md", "a.exe"]) {
+    assert.equal((await authed(imageUrl(bad))).status, 400, `GET ${bad}`);
+    assert.equal((await putImage(bad, PNG)).status, 400, `PUT ${bad}`);
+  }
+  assert.equal((await authed("/api/image")).status, 400, "missing path");
+  assert.equal(gh.calls.length, before);
 });

@@ -19,6 +19,24 @@ gh.files.set("research/structured-pruning.md", {
 });
 gh.files.set("research/pruning/heads/attention-heads.md", { content: utf8ToB64("# Heads\n"), sha: "d".repeat(40) });
 gh.files.set("research/pruning/channels.md", { content: utf8ToB64("# Channels\n"), sha: "e".repeat(40) });
+// Images are stored base64-encoded, like GitHub's contents API.
+const DIAGRAM_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="90" viewBox="0 0 240 90">' +
+  '<rect width="240" height="90" rx="10" fill="#0f766e"/>' +
+  '<text x="120" y="54" font-family="sans-serif" font-size="20" fill="#fff" text-anchor="middle">diagram.svg</text></svg>';
+gh.files.set("research/images/diagram.svg", { content: Buffer.from(DIAGRAM_SVG).toString("base64"), sha: "f".repeat(40) });
+// 1x1 PNG.
+gh.files.set("research/images/pixel.png", {
+  content: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==",
+  sha: "1".repeat(40),
+});
+gh.files.set("research/images-demo.md", {
+  content: utf8ToB64(
+    "# Images\n\nRelative to this note:\n\n![diagram](images/diagram.svg)\n\nSame image via ./ and from the repo root:\n\n" +
+      "![dot](./images/pixel.png) ![root](/research/images/diagram.svg)\n\nMissing: ![gone](images/missing.png)\n\nOutside the repo: ![escape](../../x.png)\n",
+  ),
+  sha: "2".repeat(40),
+});
 gh.files.set("daily/2026-11-10 周一.md", { content: utf8ToB64("# 2026-11-10\n\n今天的笔记。"), sha: "c".repeat(40) });
 
 const env = { ...testEnv, ALLOWED_ORIGINS: "http://localhost:4000,http://127.0.0.1:4000" };

@@ -41,6 +41,12 @@ export function installFakeGitHub({ login = "TWWinde", repo = "TWWinde/notes", b
       const f = files.get(path);
       if (method === "GET") {
         if (!f) return reply(404, { message: "Not Found" });
+        if ((new Headers(init.headers).get("Accept") || "").includes("raw")) {
+          return new Response(new Uint8Array(Buffer.from(f.content, "base64")), {
+            status: 200,
+            headers: { "Content-Type": "application/vnd.github.raw" },
+          });
+        }
         // GitHub wraps base64 at 60 chars with newlines.
         return reply(200, { type: "file", path, sha: f.sha, size: 1, content: f.content.replace(/(.{60})/g, "$1\n") });
       }

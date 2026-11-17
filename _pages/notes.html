@@ -46,6 +46,8 @@ notes_api: "https://twwinde-notebook.twwinde-notebook.workers.dev"
           <button type="button" data-view="split">Split</button>
           <button type="button" data-view="preview">Preview</button>
         </div>
+        <button type="button" class="nb-btn" id="nb-image" title="Insert image (or paste / drop one into the editor)" disabled>Image</button>
+        <input type="file" id="nb-image-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" multiple hidden>
         <button type="button" class="nb-btn" id="nb-save" title="Save (Ctrl/Cmd+S)" disabled>Save</button>
         <button type="button" class="nb-btn nb-btn--danger" id="nb-delete" title="Delete note" disabled>Delete</button>
       </header>

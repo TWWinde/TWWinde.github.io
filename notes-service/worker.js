@@ -6,6 +6,11 @@
  * - Save: the Worker writes to the private notes repo with its own fine-grained
  *   token (GITHUB_TOKEN, Contents read/write on that one repo only). The browser
  *   never sees any GitHub token.
+ * - Notes are .md files. Images (png/jpg/jpeg/gif/webp/svg, ≤ MAX_IMAGE_BYTES) live
+ *   next to them, usually in an images/ folder. GET /api/image streams one back
+ *   (the page turns it into a blob: URL because <img> cannot send the Bearer
+ *   header); PUT /api/image takes raw bytes and only creates, never overwrites.
+ *   /api/tree lists notes and folders only, never images.
  *
  * Secrets (wrangler secret put ...):
  *   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_TOKEN, SESSION_SECRET
@@ -16,6 +21,15 @@
 
 const GH_API = "https://api.github.com";
 const MAX_NOTE_BYTES = 1_000_000;
+const MAX_IMAGE_BYTES = 5_000_000;
+const IMAGE_TYPES = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  svg: "image/svg+xml",
+};
 const STATE_TTL_SECONDS = 30 * 60;
 const KEEP_FILE = ".keep";
 
@@ -236,6 +250,12 @@ async function api(request, url, env, session) {
       await deleteNote(env, `${dir}/${KEEP_FILE}`, body.sha, `Delete folder ${dir}`);
       return json({ ok: true });
     }
+    case "GET /api/image":
+      return await readImage(env, checkImagePath(url.searchParams.get("path")));
+    case "PUT /api/image": {
+      const path = checkImagePath(url.searchParams.get("path"));
+      return json(await writeImage(env, path, await readImageBody(request)));
+    }
     default:
       throw new HttpError(404, "not found");
   }
@@ -302,12 +322,52 @@ async function deleteNote(env, path, sha, message) {
   await ensureOk(res);
 }
 
-function gh(env, path, { method = "GET", body } = {}) {
+async function readImage(env, path) {
+  const res = await gh(env, `/repos/${env.NOTES_REPO}/contents/${encodePath(path)}?ref=${encodeURIComponent(branch(env))}`, {
+    accept: "application/vnd.github.raw+json",
+  });
+  if (res.status === 404) throw new HttpError(404, "image not found");
+  await ensureOk(res);
+  const bytes = await res.arrayBuffer();
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      "Content-Type": IMAGE_TYPES[extOf(path)],
+      "Cache-Control": "private, max-age=3600",
+      "X-Content-Type-Options": "nosniff",
+      // An SVG opened directly must not run scripts or load anything.
+      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+    },
+  });
+}
+
+async function writeImage(env, path, bytes) {
+  // Create only: no sha is ever sent, so GitHub refuses to overwrite an existing file.
+  const res = await gh(env, `/repos/${env.NOTES_REPO}/contents/${encodePath(path)}`, {
+    method: "PUT",
+    body: { message: `Add image ${path}`, content: btoa(bytesToBinary(bytes)), branch: branch(env) },
+  });
+  if (res.status === 409 || res.status === 422) throw new HttpError(409, "image already exists");
+  await ensureOk(res);
+  const data = await res.json();
+  return { path, sha: data.content.sha };
+}
+
+async function readImageBody(request) {
+  const len = Number(request.headers.get("Content-Length") || 0);
+  if (len > MAX_IMAGE_BYTES) throw new HttpError(413, "image too large");
+  const bytes = new Uint8Array(await request.arrayBuffer());
+  if (!bytes.length) throw new HttpError(400, "empty image");
+  if (bytes.length > MAX_IMAGE_BYTES) throw new HttpError(413, "image too large");
+  return bytes;
+}
+
+function gh(env, path, { method = "GET", body, accept = "application/vnd.github+json" } = {}) {
   return fetch(`${GH_API}${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-      Accept: "application/vnd.github+json",
+      Accept: accept,
       "X-GitHub-Api-Version": "2022-11-28",
       "User-Agent": "notebook-worker",
       ...(body ? { "Content-Type": "application/json" } : {}),
@@ -341,6 +401,24 @@ export function checkPath(path) {
   const p = path.trim().replace(/^\/+/, "");
   if (!p || p.length > 200) throw new HttpError(400, "bad path");
   if (!p.toLowerCase().endsWith(".md")) throw new HttpError(400, "only .md notes");
+  return checkSegments(p);
+}
+
+export function checkImagePath(path) {
+  if (typeof path !== "string") throw new HttpError(400, "path required");
+  const p = path.trim().replace(/^\/+/, "");
+  if (!p || p.length > 200) throw new HttpError(400, "bad path");
+  if (!Object.hasOwn(IMAGE_TYPES, extOf(p))) throw new HttpError(400, "only png, jpg, jpeg, gif, webp or svg images");
+  return checkSegments(p);
+}
+
+function extOf(path) {
+  const base = path.slice(path.lastIndexOf("/") + 1);
+  const dot = base.lastIndexOf(".");
+  return dot > 0 ? base.slice(dot + 1).toLowerCase() : "";
+}
+
+function checkSegments(p) {
   // eslint-disable-next-line no-control-regex
   if (/[\x00-\x1f\\:*?"<>|]/.test(p)) throw new HttpError(400, "bad characters in path");
   const segments = p.split("/");

@@ -18,6 +18,7 @@
     app: $("nb-app"), side: $("nb-side"), search: $("nb-search"), newBtn: $("nb-new"), newFolderBtn: $("nb-new-folder"), tree: $("nb-tree"),
     user: $("nb-user"), logout: $("nb-logout"), toggleSide: $("nb-toggle-side"),
     path: $("nb-path"), status: $("nb-status"), save: $("nb-save"), del: $("nb-delete"),
+    image: $("nb-image"), imageInput: $("nb-image-input"),
     conflict: $("nb-conflict"), conflictLoad: $("nb-conflict-load"), conflictOverwrite: $("nb-conflict-overwrite"),
     panes: $("nb-panes"), editor: $("nb-editor"), preview: $("nb-preview"),
   };
@@ -339,8 +340,236 @@
   function renderPreview() {
     if (el.panes.dataset.view === "edit") return;
     const html = window.marked ? window.marked.parse(el.editor.value) : el.editor.value;
-    el.preview.innerHTML = window.DOMPurify ? window.DOMPurify.sanitize(html) : "";
+    installImageHook();
+    imageCtx.notePath = state.current ? state.current.path : "";
+    imageCtx.active = true;
+    try {
+      el.preview.innerHTML = window.DOMPurify ? window.DOMPurify.sanitize(html) : "";
+    } finally {
+      imageCtx.active = false;
+    }
+    loadPreviewImages();
   }
+
+  /* --------------------------------------------------------------- images */
+  /* The repo is private and the API wants a Bearer header, so <img> cannot point at the
+     Worker. Relative images are fetched by script and shown through blob: URLs. */
+  const MAX_IMAGE_BYTES = 5000000;
+  const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg)$/i;
+  const IMAGE_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/svg+xml": "svg" };
+  const IMAGE_RETRY_MS = 60000;
+  const imageCache = new Map(); // repo path -> blob: URL
+  const imagePending = new Map(); // repo path -> Promise<blob: URL>
+  const imageFailed = new Map(); // repo path -> { message, until }
+  const imageCtx = { notePath: "", active: false };
+  let imageHookInstalled = false;
+
+  /* Relative src -> repo path. null = not a repo image (external, data:, blob:, …); "" = refused. */
+  function resolveImagePath(src, notePath) {
+    const s = String(src || "").trim();
+    if (!s || /^[a-z][a-z0-9+.-]*:/i.test(s) || s.startsWith("//")) return null;
+    let p = s.replace(/[?#].*$/, "");
+    if (!p) return null; // only a #hash or ?query
+    try { p = decodeURIComponent(p); } catch { return ""; }
+    const parts = p.startsWith("/") ? [] : dirOf(notePath).split("/").filter(Boolean);
+    for (const seg of p.split("/")) {
+      if (!seg || seg === ".") continue;
+      if (seg === "..") { if (!parts.length) return ""; parts.pop(); continue; }
+      if (seg.startsWith(".")) return "";
+      parts.push(seg);
+    }
+    const out = parts.join("/");
+    return out && IMAGE_EXT.test(out) ? out : "";
+  }
+
+  function markImageMissing(img, text) {
+    img.removeAttribute("src");
+    img.classList.remove("nb-img--loading");
+    img.classList.add("nb-img--missing");
+    img.alt = text;
+    img.title = text;
+  }
+
+  function installImageHook() {
+    if (imageHookInstalled || !window.DOMPurify || !window.DOMPurify.addHook) return;
+    imageHookInstalled = true;
+    window.DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+      if (!imageCtx.active || node.nodeName !== "IMG") return;
+      node.removeAttribute("data-nb-path"); // never trust these from the note itself
+      node.removeAttribute("data-nb-src");
+      const src = node.getAttribute("src");
+      const path = resolveImagePath(src, imageCtx.notePath);
+      if (path === null) return;
+      // Never let the browser request the raw relative URL from this site.
+      node.setAttribute("data-nb-src", src);
+      node.removeAttribute("srcset");
+      if (!path) { markImageMissing(node, "Image path not allowed: " + src); return; }
+      node.setAttribute("data-nb-path", path);
+      const cached = imageCache.get(path);
+      const failed = imageFailed.get(path);
+      if (cached) node.setAttribute("src", cached);
+      else if (failed && failed.until > Date.now()) markImageMissing(node, failed.message);
+      else { node.removeAttribute("src"); node.classList.add("nb-img--loading"); }
+    });
+  }
+
+  function previewImages() {
+    return [...el.preview.querySelectorAll("img[data-nb-path]")];
+  }
+
+  /* Give every preview image for a repo path whatever we now know about it. */
+  function applyImage(path) {
+    const url = imageCache.get(path);
+    const failed = imageFailed.get(path);
+    for (const img of previewImages()) {
+      if (img.dataset.nbPath !== path) continue;
+      if (url) {
+        if (img.getAttribute("src") !== url) img.src = url;
+        img.classList.remove("nb-img--loading", "nb-img--missing");
+      } else if (failed) {
+        markImageMissing(img, failed.message);
+      }
+    }
+  }
+
+  function loadPreviewImages() {
+    const now = Date.now();
+    const wanted = new Set();
+    for (const img of previewImages()) {
+      const path = img.dataset.nbPath;
+      if (img.getAttribute("src") || imageCache.has(path) || imagePending.has(path)) continue;
+      const failed = imageFailed.get(path);
+      if (failed && failed.until > now) continue;
+      wanted.add(path);
+    }
+    for (const path of wanted) fetchImage(path).then(() => applyImage(path), () => applyImage(path));
+  }
+
+  function fetchImage(path) {
+    if (imageCache.has(path)) return Promise.resolve(imageCache.get(path));
+    if (imagePending.has(path)) return imagePending.get(path);
+    const p = (async () => {
+      let res;
+      try {
+        res = await fetch(API + "/api/image?path=" + encodeURIComponent(path), {
+          headers: { Authorization: "Bearer " + store.get(TOKEN_KEY) },
+        });
+      } catch {
+        throw new ApiError(0, "offline");
+      }
+      if (res.status === 401) { signedOut("Your session expired. Please sign in again."); throw new ApiError(401, "unauthorized"); }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new ApiError(res.status, data.error || "HTTP " + res.status);
+      }
+      const url = URL.createObjectURL(await res.blob());
+      imageCache.set(path, url);
+      imageFailed.delete(path);
+      return url;
+    })();
+    imagePending.set(path, p);
+    p.then(
+      () => imagePending.delete(path),
+      (e) => {
+        imagePending.delete(path);
+        const message = e.status === 404 ? "Image not found: " + path
+          : e.status === 0 ? "Image unavailable (offline): " + path
+          : "Image failed to load (" + e.message + "): " + path;
+        imageFailed.set(path, { message, until: Date.now() + IMAGE_RETRY_MS });
+      },
+    );
+    return p;
+  }
+
+  function imageStamp() {
+    const d = new Date(), p = (x) => String(x).padStart(2, "0");
+    return "" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+  }
+
+  function randomHex4() {
+    const b = crypto.getRandomValues(new Uint8Array(2));
+    return [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function putImage(path, file) {
+    let res;
+    try {
+      res = await fetch(API + "/api/image?path=" + encodeURIComponent(path), {
+        method: "PUT",
+        headers: { Authorization: "Bearer " + store.get(TOKEN_KEY), "Content-Type": file.type },
+        body: file,
+      });
+    } catch {
+      throw new ApiError(0, "offline");
+    }
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) { signedOut("Your session expired. Please sign in again."); throw new ApiError(401, "unauthorized"); }
+    if (!res.ok) throw new ApiError(res.status, data.error || "HTTP " + res.status);
+    return data;
+  }
+
+  /* Upload one by one into <note folder>/images/ and link each at the cursor. */
+  async function uploadImages(files) {
+    const note = state.current;
+    if (!note || !files.length) return;
+    for (const file of files) {
+      const ext = IMAGE_TYPES[file.type];
+      if (!ext) { setStatus("Unsupported image type: " + (file.type || file.name || "unknown"), "error"); continue; }
+      if (!file.size) { setStatus("Image is empty: " + (file.name || "pasted image"), "error"); continue; }
+      if (file.size > MAX_IMAGE_BYTES) { setStatus("Image too large (max 5 MB): " + (file.name || "pasted image"), "error"); continue; }
+      const name = imageStamp() + "-" + randomHex4() + "." + ext;
+      const dir = dirOf(note.path);
+      const repoPath = (dir ? dir + "/" : "") + "images/" + name;
+      setStatus("Uploading image…", "busy");
+      try {
+        await putImage(repoPath, file);
+      } catch (e) {
+        if (e.status === 401) return;
+        setStatus("Image upload failed: " + (e.status === 0 ? "offline" : e.message), "error");
+        return;
+      }
+      imageCache.set(repoPath, URL.createObjectURL(file));
+      imageFailed.delete(repoPath);
+      if (state.current !== note) { setStatus("Image saved to " + repoPath, "ok"); continue; }
+      const alt = String(file.name || "").replace(/\.[^.]*$/, "").replace(/[[\]\\\r\n]/g, "").trim() || "image";
+      el.editor.setRangeText("![" + alt + "](images/" + name + ")\n", el.editor.selectionStart, el.editor.selectionEnd, "end");
+      el.editor.dispatchEvent(new Event("input"));
+    }
+  }
+
+  function imageFilesFrom(dt) {
+    if (!dt) return [];
+    let files = [...(dt.files || [])];
+    if (!files.length && dt.items) files = [...dt.items].filter((i) => i.kind === "file").map((i) => i.getAsFile()).filter(Boolean);
+    return files.filter((f) => /^image\//i.test(f.type));
+  }
+  const hasFiles = (dt) => !!dt && [...(dt.types || [])].includes("Files");
+
+  el.editor.addEventListener("paste", (e) => {
+    const files = imageFilesFrom(e.clipboardData);
+    if (!files.length || !state.current) return; // plain text paste: browser default
+    e.preventDefault();
+    uploadImages(files);
+  });
+  // Only file drops are handled here; text drags inside the editor and the tree's pointer drags are untouched.
+  el.editor.addEventListener("dragover", (e) => {
+    if (!hasFiles(e.dataTransfer) || !state.current) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  });
+  el.editor.addEventListener("drop", (e) => {
+    if (!hasFiles(e.dataTransfer) || !state.current) return;
+    e.preventDefault();
+    const files = imageFilesFrom(e.dataTransfer);
+    if (files.length) uploadImages(files);
+    else setStatus("Only image files can be dropped here", "error");
+  });
+  el.image.addEventListener("click", () => { if (state.current) el.imageInput.click(); });
+  el.imageInput.addEventListener("change", () => {
+    const files = [...el.imageInput.files];
+    el.imageInput.value = "";
+    uploadImages(files);
+  });
 
   function setView(view) {
     el.panes.dataset.view = view;
@@ -355,6 +584,7 @@
     el.path.disabled = !enabled;
     el.save.disabled = !enabled;
     el.del.disabled = !enabled;
+    el.image.disabled = !enabled;
   }
 
   async function openNote(path) {
