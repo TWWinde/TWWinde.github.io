@@ -564,6 +564,12 @@
     if (files.length) uploadImages(files);
     else setStatus("Only image files can be dropped here", "error");
   });
+  // Preview images are shown capped (see notes.css); a click toggles full size.
+  el.preview.addEventListener("click", (e) => {
+    const img = e.target;
+    if (img.nodeName !== "IMG" || !img.getAttribute("src") || img.closest("a")) return;
+    img.classList.toggle("nb-img--full");
+  });
   el.image.addEventListener("click", () => { if (state.current) el.imageInput.click(); });
   el.imageInput.addEventListener("change", () => {
     const files = [...el.imageInput.files];

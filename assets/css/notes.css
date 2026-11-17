@@ -166,12 +166,15 @@ body.nb-dragging, body.nb-dragging * { cursor: grabbing !important; user-select:
 .nb-preview blockquote { margin: 1em 0; padding: 0.2em 1em; border-left: 3px solid var(--nb-accent); color: var(--nb-text-light); }
 .nb-preview table { border-collapse: collapse; display: block; overflow-x: auto; }
 .nb-preview th, .nb-preview td { border: 1px solid var(--nb-border); padding: 0.35rem 0.6rem; }
-.nb-preview img { max-width: 100%; }
+/* Images are capped so a tall figure does not take over the page; click one to see it full size. */
+.nb-preview img { max-width: min(100%, 34rem); max-height: 15rem; width: auto; height: auto; cursor: zoom-in; }
+.nb-preview img.nb-img--full { max-width: 100%; max-height: none; cursor: zoom-out; }
 .nb-preview img.nb-img--loading, .nb-preview img.nb-img--missing {
   display: inline-block; min-width: 8rem; min-height: 4rem; padding: 0.5rem 0.75rem; vertical-align: middle;
   border-radius: 8px; font-size: 0.82rem; color: var(--nb-text-light);
 }
 .nb-preview img.nb-img--loading { background: var(--nb-muted); border: 1px dashed var(--nb-border); }
+.nb-preview img.nb-img--loading, .nb-preview img.nb-img--missing { cursor: default; }
 .nb-preview img.nb-img--missing { color: var(--nb-danger); background: var(--nb-muted); border: 1px dashed var(--nb-danger); }
 .nb-preview input[type="checkbox"] { margin-right: 0.4em; }
 
