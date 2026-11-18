@@ -38,6 +38,27 @@ gh.files.set("research/images-demo.md", {
   sha: "2".repeat(40),
 });
 gh.files.set("daily/2026-11-10 周一.md", { content: utf8ToB64("# 2026-11-10\n\n今天的笔记。"), sha: "c".repeat(40) });
+gh.files.set("research/math-demo.md", {
+  content: utf8ToB64(
+    String.raw`# Math
+
+Inline $o_i=\sum_j a_{ij}\,v_j$ and $A\in\mathbb R^{N\times N}$, with *emphasis* after.
+
+$$
+O=\underbrace{\mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt d}\right)}_{A}V
+$$
+
+Not math: costs $5 and $10. Code stays code: ` + "`$x_i$`" + String.raw`
+
+| 结构 | 公式 |
+| --- | --- |
+| 低秩 | $A\approx \Phi_Q\Phi_K^\top$ |
+
+Bad TeX: $\frac{1}{$
+`,
+  ),
+  sha: "3".repeat(40),
+});
 
 const env = { ...testEnv, ALLOWED_ORIGINS: "http://localhost:4000,http://127.0.0.1:4000" };
 

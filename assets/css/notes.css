@@ -165,6 +165,8 @@ body.nb-dragging, body.nb-dragging * { cursor: grabbing !important; user-select:
 .nb-preview code { font-family: var(--nb-mono); font-size: 0.88em; }
 .nb-preview blockquote { margin: 1em 0; padding: 0.2em 1em; border-left: 3px solid var(--nb-accent); color: var(--nb-text-light); }
 .nb-preview table { border-collapse: collapse; display: block; overflow-x: auto; }
+.nb-preview div.nb-math { margin: 1em 0; overflow-x: auto; overflow-y: hidden; padding: 0.2em 0; }
+.nb-preview .nb-math .katex { font-size: 1.08em; }
 .nb-preview th, .nb-preview td { border: 1px solid var(--nb-border); padding: 0.35rem 0.6rem; }
 /* Images are capped so a tall figure does not take over the page; click one to see it full size. */
 .nb-preview img { max-width: min(100%, 34rem); max-height: 15rem; width: auto; height: auto; cursor: zoom-in; }

@@ -339,6 +339,7 @@
 
   function renderPreview() {
     if (el.panes.dataset.view === "edit") return;
+    installMathExtension();
     const html = window.marked ? window.marked.parse(el.editor.value) : el.editor.value;
     installImageHook();
     imageCtx.notePath = state.current ? state.current.path : "";
@@ -348,7 +349,78 @@
     } finally {
       imageCtx.active = false;
     }
+    renderMath();
     loadPreviewImages();
+  }
+
+  /* ----------------------------------------------------------------- math */
+  /* $...$ and $$...$$ are lifted out by a marked extension before Markdown touches them
+     (so `_`, `*` and backslashes inside a formula survive), emitted as empty placeholders
+     that carry the TeX in a data attribute, and filled in by KaTeX after sanitizing. */
+  let mathInstalled = false;
+
+  function escapeAttr(text) {
+    return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function installMathExtension() {
+    if (mathInstalled || !window.marked || !window.marked.use) return;
+    mathInstalled = true;
+    const placeholder = (tag, token) =>
+      `<${tag} class="nb-math" data-tex="${escapeAttr(token.text)}"${token.display ? ' data-display="1"' : ""}></${tag}>`;
+    window.marked.use({
+      extensions: [
+        {
+          name: "mathBlock",
+          level: "block",
+          start(src) {
+            const i = src.indexOf("$$");
+            return i < 0 ? undefined : i;
+          },
+          tokenizer(src) {
+            const m = /^\$\$([\s\S]+?)\$\$[ \t]*(?:\n|$)/.exec(src);
+            if (m) return { type: "mathBlock", raw: m[0], text: m[1].trim(), display: true };
+          },
+          renderer(token) {
+            return placeholder("div", token) + "\n";
+          },
+        },
+        {
+          name: "mathInline",
+          level: "inline",
+          start(src) {
+            const i = src.indexOf("$");
+            return i < 0 ? undefined : i;
+          },
+          tokenizer(src) {
+            let m = /^\$\$([^$]+?)\$\$/.exec(src);
+            if (m) return { type: "mathInline", raw: m[0], text: m[1].trim(), display: true };
+            // No space just inside the dollars and no digit after, so "$5 and $10" stays text.
+            m = /^\$(?!\s)((?:\\.|[^\\$\n`])+?)(?<!\s)\$(?!\d)/.exec(src);
+            if (m) return { type: "mathInline", raw: m[0], text: m[1], display: false };
+          },
+          renderer(token) {
+            return placeholder("span", token);
+          },
+        },
+      ],
+    });
+  }
+
+  function renderMath() {
+    for (const node of el.preview.querySelectorAll(".nb-math")) {
+      const tex = node.getAttribute("data-tex") || "";
+      const display = node.hasAttribute("data-display");
+      if (!window.katex) {
+        node.textContent = display ? `$$${tex}$$` : `$${tex}$`;
+        continue;
+      }
+      try {
+        window.katex.render(tex, node, { displayMode: display, throwOnError: false });
+      } catch (err) {
+        node.textContent = tex;
+      }
+    }
   }
 
   /* --------------------------------------------------------------- images */
